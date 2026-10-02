@@ -175,13 +175,6 @@ function HomeContent() {
                   <div className="desc-text">
                     Uganda's most <em>captivating &amp; verified</em> ladies — premium photos, direct contact, and <em>unforgettable encounters</em> guaranteed.
                   </div>
-                  <div className="desc-badges">
-                    <span className="desc-badge">✅ Verified Identity</span>
-                    <span className="desc-badge">📸 Premium Photos</span>
-                    <span className="desc-badge">⚡ Fast Response</span>
-                    <span className="desc-badge">💎 Exclusive Listings</span>
-                    <span className="desc-badge">🌟 Top Rated</span>
-                  </div>
                 </div>
 
                 {vipProfiles.length > 0 ? (
