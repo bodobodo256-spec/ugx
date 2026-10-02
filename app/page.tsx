@@ -43,7 +43,6 @@ function HomeContent() {
 
             {/* ══ HERO SECTION ══ */}
             <section className="profiles-hero profiles-hero--compact" aria-labelledby="hero-title">
-              <Image src="/logo.png" alt="Uganda Sexy Babes Logo" width={52} height={52} style={{ borderRadius: '50%', flexShrink: 0, marginRight: '0.75rem' }} />
               <h1 className="hero-title hero-title--uganda" id="hero-title">
                 <span className="brand-word brand-uganda">Uganda</span>
                 <span className="brand-word brand-sexy">Sexy</span>
