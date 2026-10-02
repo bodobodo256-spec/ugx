@@ -41,65 +41,12 @@ function HomeContent() {
           <div className="body-box">
 
             {/* ══ HERO SECTION ══ */}
-            <section className="profiles-hero" aria-labelledby="hero-title">
-              <div className="hero-content">
-                <div className="hero-copy">
-
-                  {/* Uganda Eyebrow Badge */}
-                  <div className="hero-ug-badge">
-                    <span className="ug-flag-chip">🇺🇬</span>
-                    <span className="ug-badge-text">Uganda's #1 Verified Dating Network</span>
-                    <span className="ug-live-pulse">
-                      <i className="ug-pulse-dot"></i> Live
-                    </span>
-                  </div>
-
-                  {/* Main Heading with Black, Yellow, Red Theme */}
-                  <h1 className="hero-title hero-title--uganda" id="hero-title">
-                    <span className="brand-word brand-uganda">Uganda</span>
-                    <span className="brand-word brand-sexy">Sexy</span>
-                    <span className="brand-word brand-babes">Babes</span>
-                  </h1>
-
-                  {/* Uganda Tri-Color Accent Line (Black, Yellow, Red) */}
-                  <div className="uganda-tri-bar" aria-hidden="true">
-                    <span className="bar-stripe bar-black" title="Black"></span>
-                    <span className="bar-stripe bar-yellow" title="Yellow"></span>
-                    <span className="bar-stripe bar-red" title="Red"></span>
-                  </div>
-
-                  <div className="hero-subtitle">
-                    <p>
-                      Browse Uganda's hottest dating directory. Meet beautiful, verified babes offering dates, companionship &amp; fun across Kampala, Entebbe, Jinja and all major towns in Uganda.
-                    </p>
-                  </div>
-
-                  <div className="hero-actions">
-                    <a href="#vip-section" className="btn-primary">
-                      ⭐ Explore VIP Babes
-                    </a>
-                    <a href="#all-section" className="btn-secondary">
-                      Browse All Babes
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats Counter */}
-              <div className="hero-stats">
-                <div className="stat-item">
-                  <span className="stat-number">500+</span>
-                  <span className="stat-label">Active Babes</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">14</span>
-                  <span className="stat-label">Ugandan Cities</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">100%</span>
-                  <span className="stat-label">Verified Profiles</span>
-                </div>
-              </div>
+            <section className="profiles-hero profiles-hero--compact" aria-labelledby="hero-title">
+              <h1 className="hero-title hero-title--uganda" id="hero-title">
+                <span className="brand-word brand-uganda">Uganda</span>
+                <span className="brand-word brand-sexy">Sexy</span>
+                <span className="brand-word brand-babes">Babes</span>
+              </h1>
             </section>
 
             {/* ══ LAYOUT: SIDEBAR + CARDS AREA ══ */}
