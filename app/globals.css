@@ -429,16 +429,16 @@ button { cursor: pointer; font-family: var(--font); }
 ───────────────────────────────────────────────── */
 .profiles-hero {
   background:
-    radial-gradient(ellipse 550px 300px at 0% 10%, rgba(229, 62, 62, 0.16) 0%, transparent 70%),
-    radial-gradient(ellipse 550px 300px at 90% 20%, rgba(255, 214, 0, 0.14) 0%, transparent 70%),
-    linear-gradient(135deg, #141414 0%, #0A0A0A 60%, #050505 100%);
-  border: 1px solid rgba(255, 214, 0, 0.22);
+    radial-gradient(ellipse 550px 300px at 0% 10%, rgba(229, 62, 62, 0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 550px 300px at 90% 20%, rgba(255, 214, 0, 0.08) 0%, transparent 70%),
+    linear-gradient(135deg, #080808 0%, #040404 60%, #020202 100%);
+  border: 1px solid rgba(255, 214, 0, 0.18);
   border-radius: var(--radius-lg);
   padding: 2.75rem 2.25rem 2.25rem;
   margin: 1.5rem 0;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 /* Compact hero — title only */
 .profiles-hero--compact {

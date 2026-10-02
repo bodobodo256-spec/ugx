@@ -172,7 +172,7 @@ function HomeContent() {
                 <div className="tier-description--vip">
                   <div className="desc-title">✦ The Elite Experience</div>
                   <div className="desc-text">
-                    Indulge in the <em>finest company Uganda has to offer</em>. Our VIP Babes are a carefully curated collection of Uganda's most captivating, sophisticated and irresistibly charming ladies. Each profile is <em>personally verified</em>, complete with premium photos, detailed bios and direct contact — giving you everything you need to plan an <em>unforgettable encounter</em>. Whether you seek an elegant evening companion, a relaxing spa experience, or a passionate private rendezvous, our VIP collection promises nothing short of extraordinary.
+                    Uganda's most <em>captivating &amp; verified</em> ladies — premium photos, direct contact, and <em>unforgettable encounters</em> guaranteed.
                   </div>
                   <div className="desc-badges">
                     <span className="desc-badge">✅ Verified Identity</span>
