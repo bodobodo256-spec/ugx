@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/navigation';
 import { useRouter } from 'next/navigation';
 
@@ -36,7 +37,8 @@ export default function Header() {
       >
         <div className="header-topbar">
           <div className="header-logo">
-            <a href="/" title="Uganda Sexy Babes">
+            <a href="/" title="Uganda Sexy Babes" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+              <Image src="/logo.png" alt="Uganda Sexy Babes Logo" width={38} height={38} style={{ borderRadius: '50%', flexShrink: 0 }} />
               <div className="logo-text">
                 <span className="logo-ug">Uganda</span>
                 <span className="logo-sb">
@@ -117,7 +119,8 @@ export default function Header() {
             </svg>
           </button>
           <div className="mobile-logo">
-            <a href="/">
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
+              <Image src="/logo.png" alt="Uganda Sexy Babes Logo" width={30} height={30} style={{ borderRadius: '50%', flexShrink: 0 }} />
               <div className="logo-text">
                 <span className="logo-ug">Uganda</span>
                 <span className="logo-sb">
@@ -166,12 +169,15 @@ export default function Header() {
         <div className={`mobile-drawer ${isDrawerOpen ? 'open' : ''}`} id="mobileDrawer" aria-hidden={!isDrawerOpen}>
           <div className="mobile-drawer-inner">
             <div className="mobile-drawer-head">
-              <div className="logo-text" style={{ fontSize: '1.2rem' }}>
-                <span className="logo-ug">Uganda</span>
-                <span className="logo-sb">
-                  <span style={{ color: '#FF2E55', fontStyle: 'italic', marginRight: '3px' }}>Sexy</span>
-                  <span style={{ color: '#FFD600' }}>Babes</span>
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Image src="/logo.png" alt="Logo" width={32} height={32} style={{ borderRadius: '50%', flexShrink: 0 }} />
+                <div className="logo-text" style={{ fontSize: '1.2rem' }}>
+                  <span className="logo-ug">Uganda</span>
+                  <span className="logo-sb">
+                    <span style={{ color: '#FF2E55', fontStyle: 'italic', marginRight: '3px' }}>Sexy</span>
+                    <span style={{ color: '#FFD600' }}>Babes</span>
+                  </span>
+                </div>
               </div>
               <button
                 type="button"
