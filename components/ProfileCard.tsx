@@ -1,5 +1,5 @@
 import React from 'react';
-import { Profile } from '@/data/profiles';
+import { type Profile } from '@/db/schema';
 
 interface ProfileCardProps {
   profile: Profile;

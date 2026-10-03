@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "uganda-sexy-babes",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-03-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "minify": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ugx-db",
+      "database_id": "3c441669-470d-41aa-a1f7-46ec8f6db422",
+      "migrations_dir": "./drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MY_BUCKET",
+      "bucket_name": "ugx-bucket"
+    }
+  ],
+  "vars": {
+    "R2_PUBLIC_ID": "PLACEHOLDER_REPLACE_WITH_R2_ACCOUNT_HASH"
+  }
+}

@@ -5,9 +5,16 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1146.0",
+    "@libsql/client": "^0.18.0",
+    "@opennextjs/cloudflare": "^1.20.8",
+    "drizzle-orm": "^0.45.3",
     "next": "^15.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -16,6 +23,15 @@
     "@types/node": "^22.13.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.7.3"
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.147.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.4": true,
+    "esbuild@0.28.1": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.18.20": true,
+    "workerd@1.20261001.1": true
   }
 }

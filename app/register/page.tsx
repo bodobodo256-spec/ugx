@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { createProfile } from '@/app/actions/profiles';
 
 export default function RegisterPage() {
   const [name, setName] = useState('Angel');
@@ -14,10 +15,14 @@ export default function RegisterPage() {
   const [tier, setTier] = useState<'Standard' | 'VIP'>('VIP');
   const [photoPreview, setPhotoPreview] = useState('https://spcdn.shortpixel.ai/spio/ret_img+q_cdnize+to_auto+s_webp:avif/ugandaescorts.net/wp-content/uploads/1790519050120/17905211817455-320x480.jpg');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const photoFileRef = useRef<File | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      photoFileRef.current = file;
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
@@ -28,10 +33,36 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    window.scrollTo({ top: 120, behavior: 'smooth' });
+    setIsLoading(true);
+    setError(null);
+
+    // Derive city from location string (e.g. "Kololo, Kampala" → "Kampala")
+    const cityPart = location.includes(',') ? location.split(',').pop()!.trim() : location.trim();
+
+    const formData = new FormData();
+    formData.set('name',     name);
+    formData.set('age',      String(age));
+    formData.set('location', location);
+    formData.set('city',     cityPart);
+    formData.set('tier',     tier);
+    formData.set('phone',    phone);
+    formData.set('whatsapp', whatsapp);
+    formData.set('about',    bio);
+    if (photoFileRef.current) {
+      formData.set('photo', photoFileRef.current);
+    }
+
+    const result = await createProfile(formData);
+
+    setIsLoading(false);
+    if (result.success) {
+      setIsSubmitted(true);
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    } else {
+      setError('error' in result ? result.error : 'Unknown error');
+    }
   };
 
   return (
@@ -64,6 +95,18 @@ export default function RegisterPage() {
         </div>
       )}
 
+      {/* Error Banner */}
+      {error && (
+        <div className="form-success-banner active" style={{ background: 'linear-gradient(135deg, #c0392b, #e74c3c)' }} id="errorBanner">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <div>
+            <strong>Submission Failed</strong>
+            <p style={{ margin: 0, fontSize: '0.82rem', opacity: 0.9 }}>{error}</p>
+          </div>
+        </div>
+      )}
       <div className="register-layout">
 
         {/* ══ FORM COLUMN ══ */}
@@ -330,8 +373,8 @@ export default function RegisterPage() {
               </label>
             </div>
 
-            <button type="submit" className="form-submit-btn">
-              ✨ Publish My Profile Now
+            <button type="submit" className="form-submit-btn" disabled={isLoading}>
+              {isLoading ? '⏳ Submitting...' : '✨ Publish My Profile Now'}
             </button>
           </form>
         </div>
