@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import ProfileCard from '@/components/ProfileCard';
+import SEOContent from '@/components/SEOContent';
 import { LOCATIONS } from '@/data/locations';
 import { type Profile } from '@/db/schema';
 
@@ -37,10 +38,11 @@ function getSlot() {
 
 interface HomeContentProps {
   profiles: Profile[];
+  initialCity?: string;
 }
 
-export default function HomeContent({ profiles }: HomeContentProps) {
-  const [selectedCity, setSelectedCity] = useState('');
+export default function HomeContent({ profiles, initialCity = '' }: HomeContentProps) {
+  const [selectedCity, setSelectedCity] = useState(initialCity);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLocationOpen, setIsLocationOpen] = useState(true);
   const [visibleStandardCount, setVisibleStandardCount] = useState(4);
@@ -265,6 +267,9 @@ export default function HomeContent({ profiles }: HomeContentProps) {
                 </div>
               </div>
             </section>
+
+            {/* ══ SEO GUIDE & FAQ SECTION ══ */}
+            <SEOContent />
 
           </div>{/* .body-box */}
         </main>

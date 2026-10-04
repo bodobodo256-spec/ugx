@@ -27,10 +27,10 @@ export default function Footer() {
             <div className="footer-col">
               <h4>Top Cities</h4>
               <ul>
-                <li><a href="/?city=Kampala">Kampala</a></li>
-                <li><a href="/?city=Entebbe">Entebbe</a></li>
-                <li><a href="/?city=Jinja">Jinja</a></li>
-                <li><a href="/?city=Mbarara">Mbarara</a></li>
+                <li><a href="/location/kampala">Kampala</a></li>
+                <li><a href="/location/entebbe">Entebbe</a></li>
+                <li><a href="/location/jinja">Jinja</a></li>
+                <li><a href="/location/mbarara">Mbarara</a></li>
               </ul>
             </div>
             <div className="footer-col">

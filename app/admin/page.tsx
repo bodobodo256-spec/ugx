@@ -7,6 +7,14 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Admin Control Panel | Uganda Sexy Babes',
   description: 'Manage profiles, approvals, archives, VIP status, and payment verification.',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default async function AdminPage() {
