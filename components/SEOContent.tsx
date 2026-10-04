@@ -143,6 +143,112 @@ export default function SEOContent() {
             </Link>
           ))}
         </div>
+
+        {/* Popular Kampala Suburbs & Neighborhoods */}
+        <h3
+          style={{
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            color: '#FFFFFF',
+            marginTop: '1.5rem',
+            marginBottom: '0.75rem',
+          }}
+        >
+          🏙️ Top Kampala Suburbs &amp; Districts
+        </h3>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.45rem',
+          }}
+        >
+          {[
+            'Kololo Escorts',
+            'Ntinda Escorts',
+            'Muyenga Escorts',
+            'Munyonyo Escorts',
+            'Makindye Escorts',
+            'Kisaasi Escorts',
+            'Kawempe Escorts',
+            'Kasubi Escorts',
+            'Entebbe Road Babes',
+            'Kikoni Companions',
+            'Nakasero VIP Babes',
+            'Bugolobi Companions',
+            'Kabalagala Babes',
+          ].map((tag) => (
+            <span
+              key={tag}
+              style={{
+                display: 'inline-block',
+                padding: '0.3rem 0.75rem',
+                borderRadius: '16px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'var(--gray-4, #b0b0b0)',
+                fontSize: '0.8rem',
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Trending Directory Keywords */}
+        <h3
+          style={{
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            color: '#FFFFFF',
+            marginTop: '1.5rem',
+            marginBottom: '0.75rem',
+          }}
+        >
+          🔥 Popular Searches &amp; Categories
+        </h3>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '0.45rem',
+          }}
+        >
+          {[
+            'Uganda Escorts',
+            'Kampala Escorts',
+            'Verified Escorts UG',
+            'Sexy Babes Uganda',
+            'Hot Ugandan Girls',
+            'Affordable Escorts Kampala',
+            'VIP Escorts Uganda',
+            'Ebony Sexy Babes',
+            'Independent Escorts',
+            'Discreet Escorts Uganda',
+            'Massage Spas & Companions',
+            'Sugar Mummies Uganda',
+            'Premier Connect UG',
+            'Top Escorts Sites in Uganda',
+            'Call Girls Kampala',
+            'Nightlife Companions',
+          ].map((keyword) => (
+            <span
+              key={keyword}
+              style={{
+                display: 'inline-block',
+                padding: '0.3rem 0.75rem',
+                borderRadius: '16px',
+                background: 'rgba(255, 214, 0, 0.06)',
+                border: '1px solid rgba(255, 214, 0, 0.2)',
+                color: '#FFD600',
+                fontSize: '0.8rem',
+                fontWeight: 500,
+              }}
+            >
+              {keyword}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Frequently Asked Questions */}
