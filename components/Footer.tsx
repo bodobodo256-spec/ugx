@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -6,14 +7,23 @@ export default function Footer() {
       <div className="footer-inner">
         <div className="footer-top">
           <div className="footer-brand">
-            <div className="logo-text footer-logo">
-              <span className="logo-ug">Uganda</span>
-              <span className="logo-sb">
-                <span style={{ color: '#FF2E55', fontStyle: 'italic', marginRight: '4px' }}>Sexy</span>
-                <span style={{ color: '#FFD600' }}>Babes</span>
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+              <Image
+                src="/logo.png"
+                alt="Uganda Sexy Babes Logo"
+                width={38}
+                height={38}
+                style={{ borderRadius: '50%', flexShrink: 0 }}
+              />
+              <div className="logo-text footer-logo" style={{ marginBottom: 0 }}>
+                <span className="logo-ug">Uganda</span>
+                <span className="logo-sb">
+                  <span style={{ color: '#FF2E55', fontStyle: 'italic', marginRight: '4px' }}>Sexy</span>
+                  <span style={{ color: '#FFD600' }}>Babes</span>
+                </span>
+              </div>
             </div>
-            <p className="footer-tagline">Uganda's #1 Dating &amp; Companionship Directory</p>
+            <p className="footer-tagline">Uganda&apos;s #1 Adult Hookup, Escort &amp; Dating Platform</p>
           </div>
           <div className="footer-links">
             <div className="footer-col">
