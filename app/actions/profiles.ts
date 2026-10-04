@@ -150,6 +150,19 @@ export async function getAdminProfiles(): Promise<Profile[]> {
   }
 }
 
+// ─── Admin: getProfileById ───────────────────────────────────────────────────
+
+export async function getProfileById(id: number): Promise<Profile | null> {
+  try {
+    const db = getDb();
+    const rows = await db.select().from(profiles).where(eq(profiles.id, id)).limit(1);
+    return rows[0] ?? null;
+  } catch (err) {
+    console.error('[getProfileById]', err);
+    return null;
+  }
+}
+
 // ─── Admin: Toggle Actions ───────────────────────────────────────────────────
 
 export async function toggleProfileApproval(id: number, isApproved: boolean) {

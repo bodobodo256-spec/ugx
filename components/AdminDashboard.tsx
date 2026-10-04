@@ -14,7 +14,6 @@ import {
   toggleProfileVerified,
   updatePaymentStatus,
   adminCreateProfile,
-  adminUpdateProfile,
   deleteProfile,
   fetchAdminProfiles,
 } from '@/app/actions/profiles';
@@ -48,7 +47,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
 
   // ── Modals State ──
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [paymentModalProfile, setPaymentModalProfile] = useState<Profile | null>(null);
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
@@ -57,7 +55,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
 
   const addPhotoInputRef = useRef<HTMLInputElement>(null);
-  const editPhotoInputRef = useRef<HTMLInputElement>(null);
 
   // ── Sync profilesList when server re-fetches (router.refresh()) ──
   useEffect(() => {
@@ -305,82 +302,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
       const err = 'error' in res ? res.error : 'Failed to create profile';
       showToast(`❌ Create failed: ${err}`, true);
       alert(`Failed to create profile:\n\n${err}`);
-    }
-  };
-
-  // ── Edit Profile Form Submission ──
-  const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingProfile) return;
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    // Explicitly guarantee ID is present in formData
-    formData.set('id', String(editingProfile.id));
-
-    // Capture submitted values for immediate UI update
-    const submittedName = (formData.get('name') as string)?.trim() || editingProfile.name;
-    const submittedAge = parseInt(formData.get('age') as string, 10) || editingProfile.age;
-    const submittedCity = (formData.get('city') as string) || editingProfile.city;
-    const submittedLocation = (formData.get('location') as string) || editingProfile.location;
-    const submittedTier = ((formData.get('tier') as string) || editingProfile.tier) as Profile['tier'];
-    const submittedPhone = (formData.get('phone') as string) || editingProfile.phone;
-    const submittedWhatsapp = (formData.get('whatsapp') as string) || editingProfile.whatsapp;
-    const submittedAbout = ((formData.get('about') as string) ?? editingProfile.about);
-    const submittedPhotoUrl = (formData.get('photoUrl') as string)?.trim() || editingProfile.photoUrl;
-    const submittedStatus = (formData.get('status') as Profile['status']) || editingProfile.status;
-    const submittedIsApproved = formData.get('isApproved') === 'true';
-    const submittedIsArchived = formData.get('isArchived') === 'true';
-    const submittedIsPremium = formData.get('isPremium') === 'true' || submittedTier === 'Premium';
-    const submittedIsNew = formData.get('isNew') === 'true';
-    const submittedIsVerified = formData.get('isVerified') === 'true';
-    const submittedPaymentStatus = (formData.get('paymentStatus') as Profile['paymentStatus']) || editingProfile.paymentStatus;
-    const submittedPaymentAmount = parseInt(formData.get('paymentAmount') as string, 10) || editingProfile.paymentAmount;
-    const submittedPaymentRef = (formData.get('paymentRef') as string) ?? editingProfile.paymentRef;
-
-    const res = await adminUpdateProfile(formData);
-    if (res.success) {
-      showToast(`✅ ${submittedName} updated and saved to database!`);
-      // Update local state immediately so user sees the change right away
-      setProfilesList((prev) =>
-        prev.map((p) =>
-          p.id === editingProfile.id
-            ? {
-                ...p,
-                name: submittedName,
-                age: submittedAge,
-                city: submittedCity,
-                location: submittedLocation,
-                tier: submittedTier,
-                phone: submittedPhone,
-                whatsapp: submittedWhatsapp,
-                about: submittedAbout,
-                photoUrl: submittedPhotoUrl,
-                status: submittedStatus,
-                isApproved: submittedIsApproved,
-                isArchived: submittedIsArchived,
-                isPremium: submittedIsPremium,
-                isNew: submittedIsNew,
-                isVerified: submittedIsVerified,
-                paymentStatus: submittedPaymentStatus,
-                paymentAmount: submittedPaymentAmount,
-                paymentRef: submittedPaymentRef,
-              }
-            : p
-        )
-      );
-      setEditingProfile(null);
-      try {
-        const fresh = await fetchAdminProfiles();
-        if (fresh && fresh.length) setProfilesList(fresh);
-      } catch (err) {
-        console.error('Fetch error:', err);
-      }
-      startTransition(() => { router.refresh(); });
-    } else {
-      const err = 'error' in res ? res.error : 'Failed to update profile';
-      showToast(`❌ Update failed: ${err}`, true);
-      alert(`Failed to update profile:\n\n${err}`);
     }
   };
 
@@ -773,9 +694,13 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
 
                     {/* Primary Buttons */}
                     <div className="card-primary-actions">
-                      <button type="button" className="btn-card-edit" onClick={() => setEditingProfile(p)} disabled={isLoading}>
+                      <Link
+                        href={`/admin/edit/${p.id}`}
+                        className="btn-card-edit"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+                      >
                         ✏️ Edit Full Profile
-                      </button>
+                      </Link>
                       <button type="button" className="btn-card-payment" onClick={() => setPaymentModalProfile(p)} disabled={isLoading}>
                         💳 Payment Details
                       </button>
@@ -1059,14 +984,14 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                           </button>
 
                           {/* Edit Full Profile */}
-                          <button
-                            type="button"
+                          <Link
+                            href={`/admin/edit/${p.id}`}
                             className="btn-mini btn-mini-edit"
-                            onClick={() => setEditingProfile(p)}
                             title="Edit Full Profile"
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
                           >
                             ✏️ Edit
-                          </button>
+                          </Link>
 
                           {/* Delete */}
                           <button
@@ -1251,190 +1176,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                   </button>
                   <button type="submit" className="admin-btn admin-btn-primary">
                     ✨ Create Profile
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ══ MODAL 2: EDIT PROFILE ══ */}
-        {editingProfile && (
-          <div className="modal-overlay" onClick={() => setEditingProfile(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3 className="modal-title">
-                  <span>✏️ Edit Profile: {editingProfile.name}</span>
-                </h3>
-                <button
-                  type="button"
-                  className="modal-close"
-                  onClick={() => setEditingProfile(null)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form key={editingProfile.id} onSubmit={handleEditSubmit}>
-                <input type="hidden" name="id" value={editingProfile.id} />
-                <div className="admin-form-grid">
-                  <div className="admin-field">
-                    <label className="admin-label">Name *</label>
-                    <input type="text" name="name" className="admin-input" defaultValue={editingProfile.name} required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Age *</label>
-                    <input type="number" name="age" min="18" max="65" defaultValue={editingProfile.age} className="admin-input" required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">City *</label>
-                    <select name="city" className="admin-modal-select" defaultValue={editingProfile.city} required>
-                      {LOCATIONS.map((l) => (
-                        <option key={l.slug} value={l.name}>{l.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Location *</label>
-                    <input type="text" name="location" className="admin-input" defaultValue={editingProfile.location} required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Tier *</label>
-                    <select name="tier" className="admin-modal-select" defaultValue={editingProfile.tier}>
-                      <option value="Standard">Standard (10,000shs / week)</option>
-                      <option value="VIP">VIP (25,000shs / week)</option>
-                      <option value="Premium">Premium</option>
-                      <option value="VIP Spa">VIP Spa</option>
-                    </select>
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Phone *</label>
-                    <input type="tel" name="phone" className="admin-input" defaultValue={editingProfile.phone} required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">WhatsApp *</label>
-                    <input type="tel" name="whatsapp" className="admin-input" defaultValue={editingProfile.whatsapp} required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Pics Count</label>
-                    <input type="number" name="picsCount" className="admin-input" defaultValue={editingProfile.picsCount} />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Activity Status</label>
-                    <select name="status" className="admin-modal-select" defaultValue={editingProfile.status ?? 'recent'}>
-                      <option value="online">Online Now 🟢</option>
-                      <option value="recent">Recently Active ⚪</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="admin-field" style={{ marginBottom: '1.25rem' }}>
-                  <label className="admin-label">Bio Description</label>
-                  <textarea
-                    name="about"
-                    className="admin-textarea"
-                    rows={3}
-                    defaultValue={editingProfile.about ?? ''}
-                  />
-                </div>
-
-                <div className="admin-form-grid" style={{ marginBottom: '1rem' }}>
-                  <div className="admin-field">
-                    <label className="admin-label">Replace Photo (Upload to R2)</label>
-                    <input type="file" name="photo" ref={editPhotoInputRef} accept="image/*" className="admin-input" />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Or Custom Photo URL</label>
-                    <input type="url" name="photoUrl" className="admin-input" defaultValue={editingProfile.photoUrl ?? ''} />
-                  </div>
-                </div>
-
-                {/* Flags row */}
-                <div className="admin-checkbox-row">
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isApproved" value="true" defaultChecked={editingProfile.isApproved ?? false} />
-                    <span>Approved &amp; Live</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isPremium" value="true" defaultChecked={editingProfile.isPremium ?? false} />
-                    <span>Premium 💎</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isNew" value="true" defaultChecked={editingProfile.isNew ?? false} />
-                    <span>New 🆕</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isVerified" value="true" defaultChecked={editingProfile.isVerified ?? false} />
-                    <span>Verified 🛡️</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isArchived" value="true" defaultChecked={editingProfile.isArchived ?? false} />
-                    <span>Archived 📦</span>
-                  </label>
-                </div>
-
-                {/* Payment setup */}
-                <div style={{ background: '#191919', padding: '1rem', borderRadius: '8px', border: '1px solid #333', marginBottom: '1.25rem' }}>
-                  <div style={{ color: '#FFD600', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.6rem', textTransform: 'uppercase' }}>
-                    💳 Weekly Payment Details
-                  </div>
-                  <div className="admin-form-grid" style={{ margin: 0 }}>
-                    <div className="admin-field">
-                      <label className="admin-label">Payment Status</label>
-                      <select name="paymentStatus" className="admin-modal-select" defaultValue={editingProfile.paymentStatus ?? 'pending'}>
-                        <option value="verified">Verified (Paid) 🟢</option>
-                        <option value="pending">Pending 🟡</option>
-                        <option value="unpaid">Unpaid 🔴</option>
-                        <option value="failed">Failed ❌</option>
-                      </select>
-                    </div>
-
-                    <div className="admin-field">
-                      <label className="admin-label">Amount (UGX)</label>
-                      <input
-                        type="number"
-                        name="paymentAmount"
-                        className="admin-input"
-                        defaultValue={editingProfile.paymentAmount || (editingProfile.tier.startsWith('VIP') ? 25000 : 10000)}
-                      />
-                    </div>
-
-                    <div className="admin-field">
-                      <label className="admin-label">Payment Reference</label>
-                      <input
-                        type="text"
-                        name="paymentRef"
-                        className="admin-input"
-                        defaultValue={editingProfile.paymentRef ?? ''}
-                        placeholder="Sender phone or Tx ID"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-secondary"
-                    onClick={() => setEditingProfile(null)}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="admin-btn admin-btn-primary">
-                    💾 Save Changes
                   </button>
                 </div>
               </form>
