@@ -146,7 +146,7 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
           <img
             src="/logo.png"
             alt="Uganda Sexy Babes"
-            style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1px solid #FFD600', marginRight: '8px', verticalAlign: 'middle', display: 'inline-block' }}
+            style={{ width: '22px', height: '22px', marginRight: '8px', verticalAlign: 'middle', display: 'inline-block' }}
           />
           <Link href="/admin">Admin</Link>
           <span>/</span>

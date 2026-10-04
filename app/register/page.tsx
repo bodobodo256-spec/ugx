@@ -75,11 +75,8 @@ export default function RegisterPage() {
             src="/logo.png"
             alt="Uganda Sexy Babes Logo"
             style={{
-              width: '74px',
-              height: '74px',
-              borderRadius: '50%',
-              border: '2px solid #FFD600',
-              boxShadow: '0 4px 20px rgba(255,214,0,0.3)',
+              width: '76px',
+              height: '76px',
             }}
           />
         </div>

@@ -342,13 +342,10 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               src="/logo.png"
               alt="Uganda Sexy Babes Logo"
               style={{
-                width: '68px',
-                height: '68px',
-                borderRadius: '50%',
+                width: '70px',
+                height: '70px',
                 margin: '0 auto 0.9rem',
                 display: 'block',
-                border: '2px solid #FFD600',
-                boxShadow: '0 4px 18px rgba(255,214,0,0.3)',
               }}
             />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.8rem' }}>
@@ -416,10 +413,7 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                 style={{
                   width: '46px',
                   height: '46px',
-                  borderRadius: '50%',
-                  border: '2px solid #FFD600',
                   flexShrink: 0,
-                  boxShadow: '0 2px 10px rgba(255,214,0,0.25)',
                 }}
               />
               <div>
