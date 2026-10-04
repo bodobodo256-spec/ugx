@@ -906,18 +906,54 @@ button { cursor: pointer; font-family: var(--font); }
   line-height: 1.4;
 }
 
-/* Tier badge */
+/* Tier badge — base */
 .card-tier {
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* VIP → 5-point star shape via clip-path */
+.tier-vip {
+  background: var(--yellow);
+  color: var(--black);
+  /* Star shape: wider padding so clip-path has room */
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2%  35%,
+    39% 35%
+  );
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  filter: drop-shadow(0 0 6px rgba(255,214,0,0.7));
+}
+
+.tier-standard {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  backdrop-filter: blur(4px);
   padding: 0.18rem 0.5rem;
   border-radius: 4px;
-  flex-shrink: 0;
 }
-.tier-vip      { background: var(--yellow); color: var(--black); }
-.tier-standard { background: rgba(255,255,255,0.15); color: var(--white); backdrop-filter: blur(4px); }
 
 /* About overlay */
 .card-about-overlay {

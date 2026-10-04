@@ -1,25 +1,43 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ProfileCard from '@/components/ProfileCard';
 import { LOCATIONS } from '@/data/locations';
 import { type Profile } from '@/db/schema';
 
-// Fisher-Yates shuffle — returns a NEW shuffled array without mutating the original
-function shuffleArray<T>(arr: T[]): T[] {
+// ─── Deterministic seeded PRNG (Mulberry32) ───────────────────────────────────
+// Everyone who visits at the same 2-minute UTC window sees the SAME shuffle.
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
   const a = [...arr];
+  const rand = mulberry32(seed);
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
+// Returns the current UTC 2-minute bucket index (same for everyone in the same window)
+const SLOT_MS = 2 * 60 * 1000;
+function getSlot() {
+  return Math.floor(Date.now() / SLOT_MS);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface HomeContentProps {
   profiles: Profile[];
 }
-
-const SHUFFLE_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 
 export default function HomeContent({ profiles }: HomeContentProps) {
   const [selectedCity, setSelectedCity] = useState('');
@@ -27,54 +45,22 @@ export default function HomeContent({ profiles }: HomeContentProps) {
   const [isLocationOpen, setIsLocationOpen] = useState(true);
   const [visibleStandardCount, setVisibleStandardCount] = useState(4);
 
-  // Separate shuffle counters for VIP and Standard sections
-  const [vipShuffleSeed, setVipShuffleSeed] = useState(0);
-  const [stdShuffleSeed, setStdShuffleSeed] = useState(0);
-
-  // Countdown timers (seconds remaining until next shuffle)
-  const [vipCountdown, setVipCountdown] = useState(SHUFFLE_INTERVAL_MS / 1000);
-  const [stdCountdown, setStdCountdown] = useState(SHUFFLE_INTERVAL_MS / 1000);
-
-  // Stagger the Standard section shuffle by 1 minute so they don't both fire at same time
-  const vipIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const vipCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stdCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const triggerVipShuffle = useCallback(() => {
-    setVipShuffleSeed((s) => s + 1);
-    setVipCountdown(SHUFFLE_INTERVAL_MS / 1000);
-  }, []);
-
-  const triggerStdShuffle = useCallback(() => {
-    setStdShuffleSeed((s) => s + 1);
-    setStdCountdown(SHUFFLE_INTERVAL_MS / 1000);
-  }, []);
+  // Track the current time-slot so the component re-renders when the slot rolls over
+  const [currentSlot, setCurrentSlot] = useState<number>(getSlot);
 
   useEffect(() => {
-    // VIP: shuffle every 2 minutes starting immediately at mount
-    vipIntervalRef.current = setInterval(triggerVipShuffle, SHUFFLE_INTERVAL_MS);
-    vipCountdownRef.current = setInterval(() => {
-      setVipCountdown((c) => (c <= 1 ? SHUFFLE_INTERVAL_MS / 1000 : c - 1));
-    }, 1000);
-
-    // Standard: shuffle every 2 minutes, staggered by 1 minute offset
-    const stdDelay = setTimeout(() => {
-      triggerStdShuffle(); // first shuffle at 1 minute
-      stdIntervalRef.current = setInterval(triggerStdShuffle, SHUFFLE_INTERVAL_MS);
-      stdCountdownRef.current = setInterval(() => {
-        setStdCountdown((c) => (c <= 1 ? SHUFFLE_INTERVAL_MS / 1000 : c - 1));
-      }, 1000);
-    }, SHUFFLE_INTERVAL_MS / 2);
-
-    return () => {
-      if (vipIntervalRef.current) clearInterval(vipIntervalRef.current);
-      if (stdIntervalRef.current) clearInterval(stdIntervalRef.current);
-      if (vipCountdownRef.current) clearInterval(vipCountdownRef.current);
-      if (stdCountdownRef.current) clearInterval(stdCountdownRef.current);
-      clearTimeout(stdDelay);
-    };
-  }, [triggerVipShuffle, triggerStdShuffle]);
+    // Schedule a tick exactly at the next 2-minute boundary, then repeat every 2 min
+    function scheduleNext() {
+      const msUntilNext = SLOT_MS - (Date.now() % SLOT_MS);
+      const id = setTimeout(() => {
+        setCurrentSlot(getSlot());
+        scheduleNext(); // schedule the one after that
+      }, msUntilNext + 50); // +50ms buffer to avoid landing in the old slot
+      return id;
+    }
+    const id = scheduleNext();
+    return () => clearTimeout(id);
+  }, []);
 
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
@@ -93,14 +79,12 @@ export default function HomeContent({ profiles }: HomeContentProps) {
   const rawVipProfiles      = filteredProfiles.filter((p) => p.tier.startsWith('VIP') || p.isPremium || p.tier === 'Premium');
   const rawStandardProfiles = filteredProfiles.filter((p) => !p.tier.startsWith('VIP') && !p.isPremium && p.tier !== 'Premium');
 
-  // Re-shuffle whenever the seed changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const vipProfiles      = useMemo(() => shuffleArray(rawVipProfiles),      [vipShuffleSeed, rawVipProfiles.length, selectedCity, searchQuery]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const standardProfiles = useMemo(() => shuffleArray(rawStandardProfiles), [stdShuffleSeed, rawStandardProfiles.length, selectedCity, searchQuery]);
+  // Seeded shuffle — VIP and Standard use different seed offsets so their orders differ
+  const vipProfiles      = useMemo(() => seededShuffle(rawVipProfiles,      currentSlot * 2),     // eslint-disable-line react-hooks/exhaustive-deps
+    [currentSlot, rawVipProfiles.length, selectedCity, searchQuery]);
+  const standardProfiles = useMemo(() => seededShuffle(rawStandardProfiles, currentSlot * 2 + 1), // eslint-disable-line react-hooks/exhaustive-deps
+    [currentSlot, rawStandardProfiles.length, selectedCity, searchQuery]);
 
-  // Format countdown mm:ss
-  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
     <div className="page-wrapper">
@@ -204,31 +188,9 @@ export default function HomeContent({ profiles }: HomeContentProps) {
                 )}
 
                 {/* ── VIP BABES SECTION ── */}
-                <div className="tier-heading tier-heading--vip" id="vip-section" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div className="tier-heading tier-heading--vip" id="vip-section">
                   <span className="tier-count">{vipProfiles.length}</span>
                   <span className="tier-label">⭐ VIP Babes</span>
-                  {vipProfiles.length > 1 && (
-                    <span
-                      title="Profiles shuffle automatically every 2 minutes"
-                      style={{
-                        marginLeft: 'auto',
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        color: 'rgba(255,214,0,0.7)',
-                        background: 'rgba(255,214,0,0.08)',
-                        border: '1px solid rgba(255,214,0,0.2)',
-                        padding: '0.2rem 0.55rem',
-                        borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        cursor: 'default',
-                        letterSpacing: '0.3px',
-                      }}
-                    >
-                      🔀 Shuffles in {fmt(vipCountdown)}
-                    </span>
-                  )}
                 </div>
 
                 <div className="tier-description--vip">
@@ -249,31 +211,9 @@ export default function HomeContent({ profiles }: HomeContentProps) {
                 )}
 
                 {/* ── ALL BABES SECTION ── */}
-                <div className="tier-heading tier-heading--standard" id="all-section" style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div className="tier-heading tier-heading--standard" id="all-section" style={{ marginTop: '2.5rem' }}>
                   <span className="tier-count">{standardProfiles.length}</span>
                   <span className="tier-label">All Babes</span>
-                  {standardProfiles.length > 1 && (
-                    <span
-                      title="Profiles shuffle automatically every 2 minutes"
-                      style={{
-                        marginLeft: 'auto',
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        color: 'rgba(255,255,255,0.45)',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        padding: '0.2rem 0.55rem',
-                        borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        cursor: 'default',
-                        letterSpacing: '0.3px',
-                      }}
-                    >
-                      🔀 Shuffles in {fmt(stdCountdown)}
-                    </span>
-                  )}
                 </div>
 
                 <div className="tier-description--standard">
