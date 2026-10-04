@@ -53,6 +53,9 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
+  // ── View Mode (table for desktop, cards for mobile) ──
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+
   const addPhotoInputRef = useRef<HTMLInputElement>(null);
   const editPhotoInputRef = useRef<HTMLInputElement>(null);
 
@@ -615,8 +618,29 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               ))}
             </select>
 
+            {/* View mode toggle */}
+            <div className="view-mode-toggle">
+              <button
+                type="button"
+                className={`view-mode-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                onClick={() => setViewMode('cards')}
+                title="Card view — works on all screen sizes"
+              >
+                🃏 Cards
+              </button>
+              <button
+                type="button"
+                className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
+                onClick={() => setViewMode('table')}
+                title="Table view — best for desktop"
+              >
+                📋 Table
+              </button>
+            </div>
+
             {(searchQuery || selectedCity) && (
               <button
+                type="button"
                 className="admin-btn admin-btn-secondary"
                 style={{ padding: '0.5rem 0.8rem', fontSize: '0.8rem' }}
                 onClick={() => {
@@ -630,8 +654,157 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
           </div>
         </div>
 
-        {/* ══ PROFILES TABLE ══ */}
-        <div className="admin-table-wrap">
+        {/* ══ CARD VIEW (default — all buttons visible on mobile & desktop) ══ */}
+        {viewMode === 'cards' && (
+          filteredProfiles.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#888', background: '#111', borderRadius: '14px', border: '1px solid #222', marginBottom: '1.5rem' }}>
+              No profiles found matching this filter or search.
+            </div>
+          ) : (
+            <div className="admin-cards-grid">
+              {filteredProfiles.map((p) => {
+                const isVip = p.tier.startsWith('VIP');
+                const isPaid = p.paymentStatus === 'verified';
+                const isLoading = actionLoadingId === p.id;
+                return (
+                  <div
+                    key={p.id}
+                    className={`admin-profile-card ${!p.isApproved && !p.isArchived ? 'card-unapproved' : ''} ${p.isArchived ? 'card-archived' : ''}`}
+                  >
+                    {/* Top: Photo + Info */}
+                    <div className="card-top">
+                      <div
+                        className="card-photo-box"
+                        onClick={() => p.photoUrl && setPreviewPhotoUrl(p.photoUrl)}
+                        title="Click to preview photo"
+                      >
+                        <img
+                          src={p.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=120&q=80'}
+                          alt={p.name}
+                          className="card-photo-img"
+                        />
+                      </div>
+                      <div className="card-info">
+                        <div className="card-name-row">
+                          <h3 className="card-name">{p.name}</h3>
+                          <span className={`pill ${isVip ? 'pill-vip' : p.tier === 'Premium' ? 'pill-premium' : 'pill-standard'}`} style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>
+                            {isVip ? '⭐ VIP' : p.tier === 'Premium' ? '💎' : p.tier}
+                          </span>
+                        </div>
+                        <div className="card-location">📍 {p.location || p.city} · {p.age} yrs</div>
+                        <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                          {p.isNew && <span className="badge-tag badge-new">NEW</span>}
+                          {p.isVerified && <span className="badge-tag badge-verified">VERIFIED</span>}
+                          {p.isArchived && <span className="badge-tag" style={{ background: '#444', color: '#ccc' }}>ARCHIVED</span>}
+                          {p.isPremium && <span className="badge-tag" style={{ background: '#7d3c98', color: '#fff' }}>PREM</span>}
+                        </div>
+                        <div className="card-contacts">
+                          <a href={`tel:${p.phone}`} className="contact-link">📞 {p.phone}</a>
+                          <a href={`https://wa.me/${p.whatsapp}`} target="_blank" rel="noopener noreferrer" className="contact-link wa">💬 WhatsApp</a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Strip */}
+                    <div className="card-status-strip">
+                      <span className={`pill ${p.isApproved ? 'pill-approved' : 'pill-pending'}`} style={{ fontSize: '0.72rem' }}>
+                        {p.isApproved ? '✅ Approved' : '⏳ Pending'}
+                      </span>
+                      <span className={`pill ${isPaid ? 'pill-approved' : p.paymentStatus === 'unpaid' ? 'pill-unpaid' : 'pill-pending'}`} style={{ fontSize: '0.72rem' }}>
+                        {isPaid ? `🟢 Paid (${(p.paymentAmount || (isVip ? 25000 : 10000)).toLocaleString()}shs)` : p.paymentStatus === 'unpaid' ? '🔴 Unpaid' : '🟡 Pending Pay'}
+                      </span>
+                      {p.paymentRef && (
+                        <span style={{ fontSize: '0.7rem', color: '#FFD600' }} title={p.paymentRef}>
+                          Ref: {p.paymentRef.slice(0, 14)}{p.paymentRef.length > 14 ? '…' : ''}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Primary Buttons */}
+                    <div className="card-primary-actions">
+                      <button type="button" className="btn-card-edit" onClick={() => setEditingProfile(p)} disabled={isLoading}>
+                        ✏️ Edit Full Profile
+                      </button>
+                      <button type="button" className="btn-card-payment" onClick={() => setPaymentModalProfile(p)} disabled={isLoading}>
+                        💳 Payment Details
+                      </button>
+                    </div>
+
+                    {/* Toggle Chips Grid */}
+                    <div className="card-toggles-section">
+                      <div className="toggles-header">
+                        <span>Quick Actions</span>
+                        {isLoading && <span style={{ color: '#FFD600', fontWeight: 700 }}>⏳ Saving to DB...</span>}
+                      </div>
+                      <div className="toggles-buttons-grid">
+                        <button
+                          type="button"
+                          className={`toggle-chip ${p.isApproved ? 'active-approval' : ''}`}
+                          onClick={() => handleToggleApproval(p)}
+                          disabled={isLoading}
+                        >
+                          {p.isApproved ? '✅ Approved' : '⏳ Approve'}
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-chip ${isPaid ? 'active-approval' : ''}`}
+                          onClick={() => handleQuickVerifyPayment(p)}
+                          disabled={isLoading}
+                        >
+                          {isPaid ? '💳 Paid ✓' : '💳 Verify Pay'}
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-chip ${isVip ? 'active-vip' : ''}`}
+                          onClick={() => handleToggleVip(p)}
+                          disabled={isLoading}
+                        >
+                          ⭐ {isVip ? 'VIP ON' : 'Make VIP'}
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-chip ${p.isPremium ? 'active-prem' : ''}`}
+                          onClick={() => handleTogglePremium(p)}
+                          disabled={isLoading}
+                        >
+                          💎 {p.isPremium ? 'Prem ON' : 'Premium'}
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-chip ${p.isNew ? 'active-new' : ''}`}
+                          onClick={() => handleToggleNew(p)}
+                          disabled={isLoading}
+                        >
+                          🆕 {p.isNew ? 'New ON' : 'New OFF'}
+                        </button>
+                        <button
+                          type="button"
+                          className={`toggle-chip ${p.isArchived ? 'active-archive' : ''}`}
+                          onClick={() => handleToggleArchive(p)}
+                          disabled={isLoading}
+                        >
+                          {p.isArchived ? '↩️ Restore' : '📦 Archive'}
+                        </button>
+                        <button
+                          type="button"
+                          className="toggle-chip chip-delete"
+                          onClick={() => handleDeleteProfile(p)}
+                          disabled={isLoading}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        )}
+
+        {/* ══ TABLE VIEW (desktop only) ══ */}
+        {viewMode === 'table' && (
+          <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
               <tr>
@@ -862,7 +1035,8 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               )}
             </tbody>
           </table>
-        </div>
+          </div>
+        )}
 
         {/* ══ MODAL 1: ADD NEW PROFILE ══ */}
         {isAddModalOpen && (
