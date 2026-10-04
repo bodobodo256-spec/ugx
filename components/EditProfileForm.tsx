@@ -12,6 +12,11 @@ interface EditProfileFormProps {
   profile: Profile;
 }
 
+function parseUrls(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try { return JSON.parse(raw) as string[]; } catch { return raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean); }
+}
+
 export default function EditProfileForm({ profile }: EditProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -46,6 +51,15 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
   const [previewImage, setPreviewImage] = useState<string>(profile.photoUrl || '/logo.png');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Gallery state
+  const [existingGallery, setExistingGallery] = useState<string[]>(parseUrls(profile.galleryUrls));
+  const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([]);
+  const [newGalleryPreviews, setNewGalleryPreviews] = useState<string[]>([]);
+
+  // Video state
+  const [existingVideos, setExistingVideos] = useState<string[]>(parseUrls(profile.videoUrls));
+  const [newVideoFiles, setNewVideoFiles] = useState<File[]>([]);
+
   // Notification state
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -62,6 +76,37 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
       const objectUrl = URL.createObjectURL(file);
       setPreviewImage(objectUrl);
     }
+  };
+
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setNewGalleryFiles(prev => [...prev, ...files]);
+    const previews = files.map(f => URL.createObjectURL(f));
+    setNewGalleryPreviews(prev => [...prev, ...previews]);
+  };
+
+  const removeExistingGallery = (idx: number) => {
+    setExistingGallery(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeNewGallery = (idx: number) => {
+    setNewGalleryFiles(prev => prev.filter((_, i) => i !== idx));
+    setNewGalleryPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setNewVideoFiles(prev => [...prev, ...files]);
+  };
+
+  const removeExistingVideo = (idx: number) => {
+    setExistingVideos(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeNewVideo = (idx: number) => {
+    setNewVideoFiles(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,6 +140,14 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
       formData.set('photo', selectedFile);
     }
 
+    // Gallery: pass kept existing URLs + new files
+    formData.set('galleryUrls', JSON.stringify(existingGallery));
+    newGalleryFiles.forEach(f => formData.append('gallery', f));
+
+    // Videos: pass kept existing URLs + new files
+    formData.set('videoUrls', JSON.stringify(existingVideos));
+    newVideoFiles.forEach(f => formData.append('videos', f));
+
     startTransition(async () => {
       const res = await adminUpdateProfile(formData);
       if (res.success) {
@@ -109,6 +162,7 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
       }
     });
   };
+
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to permanently delete "${profile.name}"? This action cannot be undone.`)) {
@@ -520,7 +574,136 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
               </div>
             </div>
 
+            {/* Section: Gallery Photos (R2) */}
+            <div className="edit-card">
+              <div className="edit-card-header">
+                <span className="edit-card-icon">🖼️</span>
+                <div>
+                  <h2 className="edit-card-title">Gallery Photos</h2>
+                  <p className="edit-card-desc">Upload multiple photos to showcase on the profile page</p>
+                </div>
+              </div>
+
+              {/* Existing gallery */}
+              {existingGallery.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <span className="edit-label" style={{ marginBottom: '0.6rem', display: 'block' }}>Current Gallery ({existingGallery.length} photo{existingGallery.length !== 1 ? 's' : ''})</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.5rem' }}>
+                    {existingGallery.map((url, idx) => (
+                      <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', background: '#1a1a1a' }}>
+                        <img src={url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingGallery(idx)}
+                          title="Remove photo"
+                          style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(255,59,48,0.9)', border: 'none', borderRadius: '50%', width: '22px', height: '22px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                        >×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New gallery previews */}
+              {newGalleryPreviews.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <span className="edit-label" style={{ marginBottom: '0.6rem', display: 'block', color: '#34C759' }}>New Photos to Upload ({newGalleryPreviews.length})</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.5rem' }}>
+                    {newGalleryPreviews.map((url, idx) => (
+                      <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', background: '#1a1a1a', border: '2px solid #34C759' }}>
+                        <img src={url} alt={`New ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => removeNewGallery(idx)}
+                          title="Remove"
+                          style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(255,59,48,0.9)', border: 'none', borderRadius: '50%', width: '22px', height: '22px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="edit-field">
+                <label className="edit-label">Add Gallery Photos</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryChange}
+                  className="edit-file-input"
+                />
+                <span className="edit-hint">Select multiple photos at once. JPEG, PNG, WebP up to 10MB each.</span>
+              </div>
+            </div>
+
+            {/* Section: Videos (R2) */}
+            <div className="edit-card">
+              <div className="edit-card-header">
+                <span className="edit-card-icon">🎬</span>
+                <div>
+                  <h2 className="edit-card-title">Videos</h2>
+                  <p className="edit-card-desc">Upload video clips displayed on the profile page</p>
+                </div>
+              </div>
+
+              {/* Existing videos */}
+              {existingVideos.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <span className="edit-label" style={{ marginBottom: '0.6rem', display: 'block' }}>Current Videos ({existingVideos.length})</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {existingVideos.map((url, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#1a1a1a', borderRadius: '8px', padding: '0.6rem 0.75rem', border: '1px solid #2a2a2a' }}>
+                        <span style={{ fontSize: '1.25rem' }}>🎥</span>
+                        <span style={{ flex: 1, fontSize: '0.8rem', color: '#aaa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url.split('/').pop() || url}</span>
+                        <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#0a84ff', flexShrink: 0 }}>Preview</a>
+                        <button
+                          type="button"
+                          onClick={() => removeExistingVideo(idx)}
+                          style={{ background: 'rgba(255,59,48,0.15)', border: '1px solid rgba(255,59,48,0.4)', borderRadius: '6px', color: '#FF3B30', fontSize: '0.75rem', padding: '2px 8px', cursor: 'pointer', flexShrink: 0 }}
+                        >Remove</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* New video files queued */}
+              {newVideoFiles.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <span className="edit-label" style={{ marginBottom: '0.6rem', display: 'block', color: '#34C759' }}>New Videos to Upload ({newVideoFiles.length})</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {newVideoFiles.map((f, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#0d1f0d', borderRadius: '8px', padding: '0.6rem 0.75rem', border: '1px solid #34C759' }}>
+                        <span style={{ fontSize: '1.25rem' }}>🎞️</span>
+                        <span style={{ flex: 1, fontSize: '0.8rem', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                        <span style={{ fontSize: '0.72rem', color: '#888', flexShrink: 0 }}>{(f.size / 1024 / 1024).toFixed(1)} MB</span>
+                        <button
+                          type="button"
+                          onClick={() => removeNewVideo(idx)}
+                          style={{ background: 'rgba(255,59,48,0.15)', border: '1px solid rgba(255,59,48,0.4)', borderRadius: '6px', color: '#FF3B30', fontSize: '0.75rem', padding: '2px 8px', cursor: 'pointer', flexShrink: 0 }}
+                        >Remove</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="edit-field">
+                <label className="edit-label">Upload Videos</label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  onChange={handleVideoChange}
+                  className="edit-file-input"
+                />
+                <span className="edit-hint">MP4, MOV, WebM up to 100MB each. Videos are streamed from R2.</span>
+              </div>
+            </div>
+
             {/* Section 5: Tier & Badges */}
+
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">🏷️</span>

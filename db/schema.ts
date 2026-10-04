@@ -20,6 +20,8 @@ export const profiles = sqliteTable('profiles', {
   picsCount:     integer('pics_count').notNull().default(0),
   vidsCount:     integer('vids_count'),
   photoUrl:      text('photo_url'),
+  galleryUrls:   text('gallery_urls'),
+  videoUrls:     text('video_urls'),
   about:         text('about'),
   phone:         text('phone').notNull(),
   whatsapp:      text('whatsapp').notNull(),

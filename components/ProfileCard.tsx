@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { type Profile } from '@/db/schema';
 
 interface ProfileCardProps {
@@ -9,11 +10,12 @@ interface ProfileCardProps {
 export default function ProfileCard({ profile, priority = false }: ProfileCardProps) {
   const isVip = profile.tier.startsWith('VIP');
   const isPremium = Boolean(profile.isPremium || profile.tier === 'Premium');
+  const profileUrl = `/profile/${profile.slug || profile.id}`;
 
   return (
     <article className={`profile-card ${isVip || isPremium ? 'pcard-vip' : ''}`} itemScope itemType="https://schema.org/Person">
       <div className="card-shell">
-        <a href={`#profile-${profile.id}`} className="card-main-link" itemProp="url" aria-label={`View ${profile.name} profile`}>
+        <Link href={profileUrl} className="card-main-link" itemProp="url" aria-label={`View ${profile.name} profile`}>
           <div className="card-img-wrap">
             <img
               className="card-photo"
@@ -65,7 +67,7 @@ export default function ProfileCard({ profile, priority = false }: ProfileCardPr
               </span>
             </div>
           </div>
-        </a>
+        </Link>
 
         {/* ── Action Buttons: Red Call Button & Green WhatsApp Button ── */}
         <div className="card-actions">

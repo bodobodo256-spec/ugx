@@ -16,7 +16,7 @@ function toSlug(name: string) {
   );
 }
 
-async function uploadPhoto(file: File, slug: string): Promise<string | null> {
+export async function uploadMedia(file: File, folder: string): Promise<string | null> {
   if (!file || file.size === 0) return null;
   try {
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
@@ -28,7 +28,7 @@ async function uploadPhoto(file: File, slug: string): Promise<string | null> {
     const r2PublicUrl = process.env.R2_PUBLIC_URL || 'https://pub-69c390381fd247b6a79b2d9ad87415e9.r2.dev';
 
     if (!r2AccountId || !r2AccessKey || !r2SecretKey) {
-      console.warn('[uploadPhoto] R2 credentials not configured, skipping photo upload');
+      console.warn('[uploadMedia] R2 credentials not configured, skipping media upload');
       return null;
     }
 
@@ -41,21 +41,38 @@ async function uploadPhoto(file: File, slug: string): Promise<string | null> {
       },
     });
 
-    const key    = `profiles/${slug}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const isVideo = file.type?.startsWith('video/') || /\.(mp4|webm|mov|m4v|3gp)$/i.test(file.name);
+    const subfolder = isVideo ? 'videos' : 'photos';
+    const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const key    = `profiles/${folder}/${subfolder}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${cleanName}`;
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    let contentType = file.type;
+    if (!contentType) {
+      if (cleanName.endsWith('.mp4')) contentType = 'video/mp4';
+      else if (cleanName.endsWith('.webm')) contentType = 'video/webm';
+      else if (cleanName.endsWith('.png')) contentType = 'image/png';
+      else if (cleanName.endsWith('.webp')) contentType = 'image/webp';
+      else contentType = 'image/jpeg';
+    }
 
     await s3.send(new PutObjectCommand({
       Bucket:      r2Bucket,
       Key:         key,
       Body:        buffer,
-      ContentType: file.type || 'image/jpeg',
+      ContentType: contentType,
     }));
 
     return `${r2PublicUrl}/${key}`;
   } catch (err) {
-    console.error('[uploadPhoto error]', err);
+    console.error('[uploadMedia error]', err);
     return null;
   }
+}
+
+// Backward-compatible alias
+async function uploadPhoto(file: File, slug: string): Promise<string | null> {
+  return uploadMedia(file, slug);
 }
 
 // ─── Public: createProfile (from registration page) ──────────────────────────
@@ -73,7 +90,17 @@ export async function createProfile(formData: FormData): Promise<
     const whatsapp    = (formData.get('whatsapp')    as string)?.trim();
     const about       = ((formData.get('about')      as string) ?? '').trim();
     const paymentRef  = ((formData.get('payment_ref') as string) ?? '').trim();
+
+    // 1. Featured profile photo
     const photoFile   = formData.get('photo')        as File | null;
+
+    // 2. Gallery photos (multiple files or comma/newline separated URLs)
+    const galleryFiles = formData.getAll('gallery').filter((item): item is File => item instanceof File && item.size > 0);
+    const rawGalleryUrls = (formData.get('galleryUrls') as string) || '';
+
+    // 3. Videos (multiple video files or comma/newline separated URLs)
+    const videoFiles = formData.getAll('videos').filter((item): item is File => item instanceof File && item.size > 0);
+    const rawVideoUrls = (formData.get('videoUrls') as string) || '';
 
     if (!name || !age || age < 18 || !location || !city || !phone || !whatsapp) {
       return { success: false, error: 'Please fill in all required fields (18+).' };
@@ -82,12 +109,45 @@ export async function createProfile(formData: FormData): Promise<
     const slug = toSlug(name);
     let photoUrl: string | null = null;
 
+    // Upload main profile photo
     if (photoFile && photoFile.size > 0) {
-      photoUrl = await uploadPhoto(photoFile, slug);
+      photoUrl = await uploadMedia(photoFile, slug);
+    }
+
+    // Upload gallery photos to R2
+    const galleryList: string[] = [];
+    if (rawGalleryUrls.trim()) {
+      try {
+        const parsed = JSON.parse(rawGalleryUrls);
+        if (Array.isArray(parsed)) galleryList.push(...parsed);
+      } catch {
+        galleryList.push(...rawGalleryUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
+      }
+    }
+    for (const gFile of galleryFiles) {
+      const gUrl = await uploadMedia(gFile, slug);
+      if (gUrl) galleryList.push(gUrl);
+    }
+
+    // Upload videos to R2
+    const videoList: string[] = [];
+    if (rawVideoUrls.trim()) {
+      try {
+        const parsed = JSON.parse(rawVideoUrls);
+        if (Array.isArray(parsed)) videoList.push(...parsed);
+      } catch {
+        videoList.push(...rawVideoUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
+      }
+    }
+    for (const vFile of videoFiles) {
+      const vUrl = await uploadMedia(vFile, slug);
+      if (vUrl) videoList.push(vUrl);
     }
 
     // Weekly pricing: Standard = 10,000 UGX, VIP = 25,000 UGX
     const paymentAmount = tier === 'VIP' ? 25000 : 10000;
+    const picsCount = (photoUrl ? 1 : 0) + galleryList.length;
+    const vidsCount = videoList.length;
 
     const db = getDb();
 
@@ -107,8 +167,11 @@ export async function createProfile(formData: FormData): Promise<
       paymentAmount,
       paymentRef:    paymentRef || null,
       status:        'recent',
-      picsCount:     photoUrl ? 1 : 0,
+      picsCount,
+      vidsCount,
       photoUrl,
+      galleryUrls:   galleryList.length ? JSON.stringify(galleryList) : null,
+      videoUrls:     videoList.length ? JSON.stringify(videoList) : null,
       about,
       phone,
       whatsapp,
@@ -161,6 +224,26 @@ export async function getProfileById(id: number): Promise<Profile | null> {
     console.error('[getProfileById]', err);
     return null;
   }
+}
+
+export async function getProfileBySlug(slug: string): Promise<Profile | null> {
+  try {
+    const db = getDb();
+    const rows = await db.select().from(profiles).where(eq(profiles.slug, slug)).limit(1);
+    return rows[0] ?? null;
+  } catch (err) {
+    console.error('[getProfileBySlug]', err);
+    return null;
+  }
+}
+
+export async function getProfileByIdOrSlug(idOrSlug: string | number): Promise<Profile | null> {
+  const numId = typeof idOrSlug === 'number' ? idOrSlug : parseInt(String(idOrSlug).trim(), 10);
+  if (!isNaN(numId) && String(numId) === String(idOrSlug).trim()) {
+    const byId = await getProfileById(numId);
+    if (byId) return byId;
+  }
+  return getProfileBySlug(String(idOrSlug).trim());
 }
 
 // ─── Admin: Toggle Actions ───────────────────────────────────────────────────
@@ -438,10 +521,54 @@ export async function adminUpdateProfile(
     }
 
     if (photoFile && photoFile.size > 0) {
-      const uploaded = await uploadPhoto(photoFile, `edit-${id}`);
+      const uploaded = await uploadMedia(photoFile, `profile-${id}`);
       if (uploaded) {
         updateFields.photoUrl = uploaded;
       }
+    }
+
+    // 2. Gallery photos
+    const rawGalleryUrls = formData.get('galleryUrls') as string | null;
+    let galleryList: string[] = [];
+    if (rawGalleryUrls !== null) {
+      try {
+        const parsed = JSON.parse(rawGalleryUrls);
+        if (Array.isArray(parsed)) galleryList = parsed;
+      } catch {
+        galleryList = rawGalleryUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    const newGalleryFiles = formData.getAll('gallery').filter((item): item is File => item instanceof File && item.size > 0);
+    for (const gFile of newGalleryFiles) {
+      const gUrl = await uploadMedia(gFile, `profile-${id}`);
+      if (gUrl) galleryList.push(gUrl);
+    }
+    if (rawGalleryUrls !== null || newGalleryFiles.length > 0) {
+      updateFields.galleryUrls = galleryList.length ? JSON.stringify(galleryList) : null;
+      updateFields.picsCount = (updateFields.photoUrl || customPhotoUrl ? 1 : 1) + galleryList.length;
+    }
+
+    // 3. Videos
+    const rawVideoUrls = formData.get('videoUrls') as string | null;
+    let videoList: string[] = [];
+    if (rawVideoUrls !== null) {
+      try {
+        const parsed = JSON.parse(rawVideoUrls);
+        if (Array.isArray(parsed)) videoList = parsed;
+      } catch {
+        videoList = rawVideoUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    const newVideoFiles = formData.getAll('videos').filter((item): item is File => item instanceof File && item.size > 0);
+    for (const vFile of newVideoFiles) {
+      const vUrl = await uploadMedia(vFile, `profile-${id}`);
+      if (vUrl) videoList.push(vUrl);
+    }
+    if (rawVideoUrls !== null || newVideoFiles.length > 0) {
+      updateFields.videoUrls = videoList.length ? JSON.stringify(videoList) : null;
+      updateFields.vidsCount = videoList.length;
     }
 
     const db = getDb();

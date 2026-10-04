@@ -20,6 +20,13 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const photoFileRef = useRef<File | null>(null);
 
+  // Gallery state
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
+  // Video state
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -33,6 +40,30 @@ export default function RegisterPage() {
       reader.readAsDataURL(file);
     }
   };
+
+  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setGalleryFiles(prev => [...prev, ...files]);
+    const previews = files.map(f => URL.createObjectURL(f));
+    setGalleryPreviews(prev => [...prev, ...previews]);
+  };
+
+  const removeGallery = (idx: number) => {
+    setGalleryFiles(prev => prev.filter((_, i) => i !== idx));
+    setGalleryPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setVideoFiles(prev => [...prev, ...files]);
+  };
+
+  const removeVideo = (idx: number) => {
+    setVideoFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +86,10 @@ export default function RegisterPage() {
     if (photoFileRef.current) {
       formData.set('photo', photoFileRef.current);
     }
+    // Gallery photos
+    galleryFiles.forEach(f => formData.append('gallery', f));
+    // Videos
+    videoFiles.forEach(f => formData.append('videos', f));
 
     const result = await createProfile(formData);
 
@@ -66,6 +101,7 @@ export default function RegisterPage() {
       setError('error' in result ? result.error : 'Unknown error');
     }
   };
+
 
   return (
     <div className="register-wrapper">
@@ -433,7 +469,95 @@ export default function RegisterPage() {
               </label>
             </div>
 
+            {/* Section 8: Gallery Photos */}
+            <div className="form-section">
+              <div className="form-section-title">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/>
+                </svg>
+                8. Gallery Photos (Optional)
+              </div>
+              <label className="upload-dropzone">
+                <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <div className="upload-title">Add gallery photos</div>
+                <div className="upload-hint">Select multiple photos at once — shown in your profile gallery tab</div>
+                <input
+                  type="file"
+                  className="upload-input"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryUpload}
+                />
+              </label>
+              {galleryPreviews.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--yellow)', marginBottom: '0.6rem', fontWeight: 600 }}>
+                    {galleryPreviews.length} photo{galleryPreviews.length !== 1 ? 's' : ''} queued
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '0.5rem' }}>
+                    {galleryPreviews.map((url, idx) => (
+                      <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', background: '#1a1a1a', border: '2px solid var(--yellow)' }}>
+                        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => removeGallery(idx)}
+                          style={{ position: 'absolute', top: '3px', right: '3px', background: 'rgba(255,59,48,0.9)', border: 'none', borderRadius: '50%', width: '20px', height: '20px', color: '#fff', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Section 9: Videos */}
+            <div className="form-section">
+              <div className="form-section-title">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                </svg>
+                9. Videos (Optional)
+              </div>
+              <label className="upload-dropzone">
+                <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="23 7 16 12 23 17 23 7"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                <div className="upload-title">Upload video clips</div>
+                <div className="upload-hint">MP4, MOV, WebM — shown in the videos tab of your profile</div>
+                <input
+                  type="file"
+                  className="upload-input"
+                  accept="video/*"
+                  multiple
+                  onChange={handleVideoUpload}
+                />
+              </label>
+              {videoFiles.length > 0 && (
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--yellow)', fontWeight: 600 }}>{videoFiles.length} video{videoFiles.length !== 1 ? 's' : ''} queued</div>
+                  {videoFiles.map((f, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#111', borderRadius: '8px', padding: '0.5rem 0.75rem', border: '1px solid #2a2a2a' }}>
+                      <span>🎥</span>
+                      <span style={{ flex: 1, fontSize: '0.8rem', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#888' }}>{(f.size / 1024 / 1024).toFixed(1)} MB</span>
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(idx)}
+                        style={{ background: 'rgba(255,59,48,0.15)', border: '1px solid rgba(255,59,48,0.4)', borderRadius: '6px', color: '#FF3B30', fontSize: '0.75rem', padding: '2px 8px', cursor: 'pointer' }}
+                      >Remove</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Terms & Submit */}
+
             <div className="terms-agreement">
               <input type="checkbox" id="agreeTerms" required defaultChecked />
               <label htmlFor="agreeTerms">
