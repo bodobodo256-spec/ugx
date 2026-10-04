@@ -9,24 +9,8 @@
   const AGE_KEY = 'usb_age_verified';
 
   function initAgeGate() {
-    if (sessionStorage.getItem(AGE_KEY)) return;
-
-    const gate    = document.getElementById('ageGate');
-    const overlay = document.getElementById('ageGateOverlay');
-    const enterBtn = document.getElementById('ageGateEnter');
-
-    if (!gate) return;
-
-    gate.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    enterBtn.addEventListener('click', function () {
-      sessionStorage.setItem(AGE_KEY, '1');
-      gate.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.style.overflow = '';
-    });
+    // Age gate disabled — users go straight to home page
+    return;
   }
 
   /* ── Mobile Drawer ── */

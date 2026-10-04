@@ -1,19 +1,80 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import ProfileCard from '@/components/ProfileCard';
 import { LOCATIONS } from '@/data/locations';
 import { type Profile } from '@/db/schema';
 
+// Fisher-Yates shuffle — returns a NEW shuffled array without mutating the original
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 interface HomeContentProps {
   profiles: Profile[];
 }
+
+const SHUFFLE_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 
 export default function HomeContent({ profiles }: HomeContentProps) {
   const [selectedCity, setSelectedCity] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLocationOpen, setIsLocationOpen] = useState(true);
   const [visibleStandardCount, setVisibleStandardCount] = useState(4);
+
+  // Separate shuffle counters for VIP and Standard sections
+  const [vipShuffleSeed, setVipShuffleSeed] = useState(0);
+  const [stdShuffleSeed, setStdShuffleSeed] = useState(0);
+
+  // Countdown timers (seconds remaining until next shuffle)
+  const [vipCountdown, setVipCountdown] = useState(SHUFFLE_INTERVAL_MS / 1000);
+  const [stdCountdown, setStdCountdown] = useState(SHUFFLE_INTERVAL_MS / 1000);
+
+  // Stagger the Standard section shuffle by 1 minute so they don't both fire at same time
+  const vipIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const vipCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stdCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const triggerVipShuffle = useCallback(() => {
+    setVipShuffleSeed((s) => s + 1);
+    setVipCountdown(SHUFFLE_INTERVAL_MS / 1000);
+  }, []);
+
+  const triggerStdShuffle = useCallback(() => {
+    setStdShuffleSeed((s) => s + 1);
+    setStdCountdown(SHUFFLE_INTERVAL_MS / 1000);
+  }, []);
+
+  useEffect(() => {
+    // VIP: shuffle every 2 minutes starting immediately at mount
+    vipIntervalRef.current = setInterval(triggerVipShuffle, SHUFFLE_INTERVAL_MS);
+    vipCountdownRef.current = setInterval(() => {
+      setVipCountdown((c) => (c <= 1 ? SHUFFLE_INTERVAL_MS / 1000 : c - 1));
+    }, 1000);
+
+    // Standard: shuffle every 2 minutes, staggered by 1 minute offset
+    const stdDelay = setTimeout(() => {
+      triggerStdShuffle(); // first shuffle at 1 minute
+      stdIntervalRef.current = setInterval(triggerStdShuffle, SHUFFLE_INTERVAL_MS);
+      stdCountdownRef.current = setInterval(() => {
+        setStdCountdown((c) => (c <= 1 ? SHUFFLE_INTERVAL_MS / 1000 : c - 1));
+      }, 1000);
+    }, SHUFFLE_INTERVAL_MS / 2);
+
+    return () => {
+      if (vipIntervalRef.current) clearInterval(vipIntervalRef.current);
+      if (stdIntervalRef.current) clearInterval(stdIntervalRef.current);
+      if (vipCountdownRef.current) clearInterval(vipCountdownRef.current);
+      if (stdCountdownRef.current) clearInterval(stdCountdownRef.current);
+      clearTimeout(stdDelay);
+    };
+  }, [triggerVipShuffle, triggerStdShuffle]);
 
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
@@ -29,8 +90,17 @@ export default function HomeContent({ profiles }: HomeContentProps) {
     });
   }, [profiles, selectedCity, searchQuery]);
 
-  const vipProfiles      = filteredProfiles.filter((p) => p.tier.startsWith('VIP'));
-  const standardProfiles = filteredProfiles.filter((p) => !p.tier.startsWith('VIP'));
+  const rawVipProfiles      = filteredProfiles.filter((p) => p.tier.startsWith('VIP') || p.isPremium || p.tier === 'Premium');
+  const rawStandardProfiles = filteredProfiles.filter((p) => !p.tier.startsWith('VIP') && !p.isPremium && p.tier !== 'Premium');
+
+  // Re-shuffle whenever the seed changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const vipProfiles      = useMemo(() => shuffleArray(rawVipProfiles),      [vipShuffleSeed, rawVipProfiles.length, selectedCity, searchQuery]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const standardProfiles = useMemo(() => shuffleArray(rawStandardProfiles), [stdShuffleSeed, rawStandardProfiles.length, selectedCity, searchQuery]);
+
+  // Format countdown mm:ss
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
     <div className="page-wrapper">
@@ -134,9 +204,31 @@ export default function HomeContent({ profiles }: HomeContentProps) {
                 )}
 
                 {/* ── VIP BABES SECTION ── */}
-                <div className="tier-heading tier-heading--vip" id="vip-section">
+                <div className="tier-heading tier-heading--vip" id="vip-section" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <span className="tier-count">{vipProfiles.length}</span>
                   <span className="tier-label">⭐ VIP Babes</span>
+                  {vipProfiles.length > 1 && (
+                    <span
+                      title="Profiles shuffle automatically every 2 minutes"
+                      style={{
+                        marginLeft: 'auto',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        color: 'rgba(255,214,0,0.7)',
+                        background: 'rgba(255,214,0,0.08)',
+                        border: '1px solid rgba(255,214,0,0.2)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        cursor: 'default',
+                        letterSpacing: '0.3px',
+                      }}
+                    >
+                      🔀 Shuffles in {fmt(vipCountdown)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="tier-description--vip">
@@ -157,9 +249,31 @@ export default function HomeContent({ profiles }: HomeContentProps) {
                 )}
 
                 {/* ── ALL BABES SECTION ── */}
-                <div className="tier-heading tier-heading--standard" id="all-section" style={{ marginTop: '2.5rem' }}>
+                <div className="tier-heading tier-heading--standard" id="all-section" style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                   <span className="tier-count">{standardProfiles.length}</span>
                   <span className="tier-label">All Babes</span>
+                  {standardProfiles.length > 1 && (
+                    <span
+                      title="Profiles shuffle automatically every 2 minutes"
+                      style={{
+                        marginLeft: 'auto',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        color: 'rgba(255,255,255,0.45)',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        cursor: 'default',
+                        letterSpacing: '0.3px',
+                      }}
+                    >
+                      🔀 Shuffles in {fmt(stdCountdown)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="tier-description--standard">

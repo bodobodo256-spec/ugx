@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [whatsapp, setWhatsapp] = useState('256700000001');
   const [bio, setBio] = useState('I am a sweet, beautiful Ugandan lady who loves good conversations, private dates and romantic evenings. Discreet and classy.');
   const [tier, setTier] = useState<'Standard' | 'VIP'>('VIP');
+  const [paymentRef, setPaymentRef] = useState('');
   const [photoPreview, setPhotoPreview] = useState('https://spcdn.shortpixel.ai/spio/ret_img+q_cdnize+to_auto+s_webp:avif/ugandaescorts.net/wp-content/uploads/1790519050120/17905211817455-320x480.jpg');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,14 +43,15 @@ export default function RegisterPage() {
     const cityPart = location.includes(',') ? location.split(',').pop()!.trim() : location.trim();
 
     const formData = new FormData();
-    formData.set('name',     name);
-    formData.set('age',      String(age));
-    formData.set('location', location);
-    formData.set('city',     cityPart);
-    formData.set('tier',     tier);
-    formData.set('phone',    phone);
-    formData.set('whatsapp', whatsapp);
-    formData.set('about',    bio);
+    formData.set('name',        name);
+    formData.set('age',         String(age));
+    formData.set('location',    location);
+    formData.set('city',        cityPart);
+    formData.set('tier',        tier);
+    formData.set('phone',       phone);
+    formData.set('whatsapp',    whatsapp);
+    formData.set('about',       bio);
+    formData.set('payment_ref', paymentRef);
     if (photoFileRef.current) {
       formData.set('photo', photoFileRef.current);
     }
@@ -88,8 +90,8 @@ export default function RegisterPage() {
           </svg>
           <div>
             <strong>Profile Submitted Successfully!</strong>
-            <p style={{ margin: 0, fontSize: '0.82rem', opacity: 0.9 }}>
-              Welcome, {name}! Your profile is under review and will appear live in the directory within 15 minutes.
+            <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.95 }}>
+              Thank you, {name}! Your {tier} profile ({tier === 'VIP' ? '25,000 UGX' : '10,000 UGX'}/weekly) has been submitted. Our admin will verify your payment and approve your listing shortly.
             </p>
           </div>
         </div>
@@ -290,7 +292,7 @@ export default function RegisterPage() {
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
                 </svg>
-                5. Select Listing Tier
+                5. Select Listing Tier &amp; Weekly Pricing
               </div>
               <div className="tier-plans-grid">
                 {/* Standard */}
@@ -307,11 +309,14 @@ export default function RegisterPage() {
                     onChange={() => setTier('Standard')}
                   />
                   <div className="tier-plan-title">Standard Babe</div>
-                  <div className="tier-plan-price">FREE Listing</div>
+                  <div className="tier-plan-price" style={{ color: '#FFD600', fontWeight: 800 }}>
+                    10,000shs <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gray-4)' }}>/ weekly</span>
+                  </div>
                   <ul className="tier-plan-features">
                     <li>✓ Standard directory listing</li>
-                    <li>✓ Direct Call &amp; WhatsApp</li>
+                    <li>✓ Direct Phone Calls &amp; WhatsApp</li>
                     <li>✓ Unlimited profile views</li>
+                    <li>✓ 7 days active verified display</li>
                   </ul>
                 </label>
 
@@ -329,24 +334,77 @@ export default function RegisterPage() {
                     onChange={() => setTier('VIP')}
                   />
                   <div className="tier-plan-title">⭐ VIP Elite Babe</div>
-                  <div className="tier-plan-price">Top Recommended</div>
+                  <div className="tier-plan-price" style={{ color: '#FF2E55', fontWeight: 800 }}>
+                    25,000shs <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gray-4)' }}>/ weekly</span>
+                  </div>
                   <ul className="tier-plan-features">
                     <li>✓ Pinned in ⭐ VIP Top Grid</li>
-                    <li>✓ Yellow Gold VIP Badge</li>
-                    <li>✓ Verified Green Checkmark</li>
+                    <li>✓ Gold VIP Badge &amp; Visual Glow</li>
+                    <li>✓ Green Verified Checkmark</li>
                     <li>✓ 10x More Direct Inquiries</li>
+                    <li>✓ Priority placement on home page</li>
                   </ul>
                 </label>
               </div>
             </div>
 
-            {/* Section 6: Photo Upload */}
+            {/* Section 6: Payment Details */}
+            <div className="form-section">
+              <div className="form-section-title">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                </svg>
+                6. Weekly Payment Verification
+              </div>
+              <div style={{ background: 'rgba(255, 214, 0, 0.05)', border: '1px solid rgba(255, 214, 0, 0.3)', borderRadius: '10px', padding: '1.25rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.75rem' }}>
+                  <span style={{ color: '#FFF', fontWeight: 600 }}>Plan Selected:</span>
+                  <span style={{ color: '#FFD600', fontWeight: 800, fontSize: '1.1rem' }}>
+                    {tier === 'VIP' ? '⭐ VIP — 25,000shs / week' : 'Standard — 10,000shs / week'}
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--gray-5)', margin: '0 0 0.85rem 0', lineHeight: 1.5 }}>
+                  Please send your weekly fee ({tier === 'VIP' ? '25,000shs' : '10,000shs'}) to our verified Mobile Money accounts below:
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ background: '#1c1b12', border: '1px solid #FFD600', borderRadius: '8px', padding: '0.75rem' }}>
+                    <div style={{ color: '#FFD600', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>MTN Mobile Money</div>
+                    <div style={{ color: '#fff', fontSize: '1.05rem', fontWeight: 800, letterSpacing: '0.5px' }}>0787 000 000</div>
+                    <div style={{ color: 'var(--gray-4)', fontSize: '0.75rem' }}>Name: Uganda Sexy Babes</div>
+                  </div>
+                  <div style={{ background: '#1c1212', border: '1px solid #FF2E55', borderRadius: '8px', padding: '0.75rem' }}>
+                    <div style={{ color: '#FF2E55', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Airtel Money</div>
+                    <div style={{ color: '#fff', fontSize: '1.05rem', fontWeight: 800, letterSpacing: '0.5px' }}>0708 000 000</div>
+                    <div style={{ color: 'var(--gray-4)', fontSize: '0.75rem' }}>Name: Uganda Sexy Babes</div>
+                  </div>
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label className="form-label" htmlFor="paymentRef">
+                    Payment Reference / Sender Phone Number <span className="req">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="paymentRef"
+                    className="form-input"
+                    placeholder="e.g. 078XXXXXXX or Mobile Money Tx ID"
+                    value={paymentRef}
+                    onChange={(e) => setPaymentRef(e.target.value)}
+                    required
+                  />
+                  <small style={{ color: 'var(--gray-4)', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
+                    Enter your MoMo sender number or transaction code so the admin can verify your payment instantly.
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 7: Photo Upload */}
             <div className="form-section">
               <div className="form-section-title">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                 </svg>
-                6. Upload Portrait Photos
+                7. Upload Portrait Photos
               </div>
               <label className="upload-dropzone">
                 <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

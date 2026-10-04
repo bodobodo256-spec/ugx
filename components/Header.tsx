@@ -196,6 +196,7 @@ export default function Header() {
               <li><a href="/" onClick={() => setIsDrawerOpen(false)}>🏠 Home</a></li>
               <li><a href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-cta">✨ Create Profile</a></li>
               <li><a href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-login">Login</a></li>
+              <li><a href="/admin" onClick={() => setIsDrawerOpen(false)} style={{ color: '#FFD600', fontWeight: 600 }}>🔒 Admin Portal</a></li>
             </ul>
           </div>
         </div>

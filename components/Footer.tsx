@@ -46,6 +46,7 @@ export default function Footer() {
               <ul>
                 <li><a href="/register">Register</a></li>
                 <li><a href="/register">Login</a></li>
+                <li><a href="/admin" style={{ color: '#FFD600' }}>Admin Portal 🔒</a></li>
               </ul>
             </div>
           </div>

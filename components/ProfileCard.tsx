@@ -8,9 +8,10 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ profile, priority = false }: ProfileCardProps) {
   const isVip = profile.tier.startsWith('VIP');
+  const isPremium = Boolean(profile.isPremium || profile.tier === 'Premium');
 
   return (
-    <article className={`profile-card ${isVip ? 'pcard-vip' : ''}`} itemScope itemType="https://schema.org/Person">
+    <article className={`profile-card ${isVip || isPremium ? 'pcard-vip' : ''}`} itemScope itemType="https://schema.org/Person">
       <div className="card-shell">
         <a href={`#profile-${profile.id}`} className="card-main-link" itemProp="url" aria-label={`View ${profile.name} profile`}>
           <div className="card-img-wrap">
@@ -18,7 +19,7 @@ export default function ProfileCard({ profile, priority = false }: ProfileCardPr
               className="card-photo"
               width={320}
               height={480}
-              src={profile.photoUrl}
+              src={profile.photoUrl ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=320&h=480&q=80'}
               alt={`${profile.name} — ${profile.location}`}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"
@@ -29,8 +30,8 @@ export default function ProfileCard({ profile, priority = false }: ProfileCardPr
                 <span className="media-badge">{profile.picsCount} pics</span>
                 {profile.vidsCount && <span className="media-badge">{profile.vidsCount} vids</span>}
               </div>
-              <span className={`card-tier ${isVip ? 'tier-vip' : 'tier-standard'}`}>
-                {profile.tier}
+              <span className={`card-tier ${isVip ? 'tier-vip' : isPremium ? 'tier-vip' : 'tier-standard'}`} style={isPremium ? { background: 'linear-gradient(135deg, #9b59b6, #8e44ad)', color: '#fff', borderColor: '#d2b4de' } : undefined}>
+                {isPremium ? '💎 Premium' : profile.tier}
               </span>
             </div>
 
@@ -56,6 +57,7 @@ export default function ProfileCard({ profile, priority = false }: ProfileCardPr
               <span className="labels">
                 {profile.isNew && <span className="label label-new">NEW</span>}
                 {profile.isVerified && <span className="label label-verified">VERIFIED</span>}
+                {isPremium && <span className="label" style={{ background: '#8e44ad', color: '#fff' }}>PREMIUM</span>}
               </span>
               <span className={`card-status status-${profile.status}`}>
                 <i className="status-dot" aria-hidden="true"></i>
