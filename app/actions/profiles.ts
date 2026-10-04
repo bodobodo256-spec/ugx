@@ -393,11 +393,46 @@ export async function adminCreateProfile(formData: FormData): Promise<
     let photoUrl: string | null = customPhotoUrl || null;
 
     if (photoFile && photoFile.size > 0) {
-      const uploaded = await uploadPhoto(photoFile, slug);
+      const uploaded = await uploadMedia(photoFile, slug);
       if (uploaded) photoUrl = uploaded;
     }
 
+    // Upload gallery photos to R2
+    const rawGalleryUrls = (formData.get('galleryUrls') as string) || '';
+    const galleryFiles = formData.getAll('gallery').filter((item): item is File => item instanceof File && item.size > 0);
+    const galleryList: string[] = [];
+    if (rawGalleryUrls.trim()) {
+      try {
+        const parsed = JSON.parse(rawGalleryUrls);
+        if (Array.isArray(parsed)) galleryList.push(...parsed);
+      } catch {
+        galleryList.push(...rawGalleryUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
+      }
+    }
+    for (const gFile of galleryFiles) {
+      const gUrl = await uploadMedia(gFile, slug);
+      if (gUrl) galleryList.push(gUrl);
+    }
+
+    // Upload videos to R2
+    const rawVideoUrls = (formData.get('videoUrls') as string) || '';
+    const videoFiles = formData.getAll('videos').filter((item): item is File => item instanceof File && item.size > 0);
+    const videoList: string[] = [];
+    if (rawVideoUrls.trim()) {
+      try {
+        const parsed = JSON.parse(rawVideoUrls);
+        if (Array.isArray(parsed)) videoList.push(...parsed);
+      } catch {
+        videoList.push(...rawVideoUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
+      }
+    }
+    for (const vFile of videoFiles) {
+      const vUrl = await uploadMedia(vFile, slug);
+      if (vUrl) videoList.push(vUrl);
+    }
+
     const finalTier = isVip ? 'VIP' : isPremium ? 'Premium' : tier;
+    const finalPicsCount = Math.max(picsCount || 0, (photoUrl ? 1 : 0) + galleryList.length);
 
     const db = getDb();
 
@@ -417,8 +452,11 @@ export async function adminCreateProfile(formData: FormData): Promise<
       paymentAmount: isNaN(paymentAmount) ? 10000 : paymentAmount,
       paymentRef: paymentRef || null,
       status,
-      picsCount,
+      picsCount: finalPicsCount,
+      vidsCount: videoList.length,
       photoUrl,
+      galleryUrls: galleryList.length ? JSON.stringify(galleryList) : null,
+      videoUrls: videoList.length ? JSON.stringify(videoList) : null,
       about,
       phone,
       whatsapp,
@@ -576,6 +614,8 @@ export async function adminUpdateProfile(
 
     revalidatePath('/');
     revalidatePath('/admin');
+    revalidatePath(`/admin/edit/${id}`);
+    revalidatePath(`/profile/${id}`);
     return { success: true };
   } catch (err) {
     console.error('[adminUpdateProfile]', err);
@@ -591,6 +631,7 @@ export async function deleteProfile(id: number): Promise<{ success: boolean; err
     await db.delete(profiles).where(eq(profiles.id, id));
     revalidatePath('/');
     revalidatePath('/admin');
+    revalidatePath(`/profile/${id}`);
     return { success: true };
   } catch (err) {
     console.error('[deleteProfile]', err);

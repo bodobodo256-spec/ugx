@@ -209,14 +209,14 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
           <span className="current">Edit #{profile.id}</span>
         </div>
         <div className="edit-top-actions">
-          <a
-            href={`/#profile-${profile.id}`}
+          <Link
+            href={`/profile/${profile.slug || profile.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="edit-view-live-btn"
           >
-            ↗ View Public Listing
-          </a>
+            ↗ View Public Page
+          </Link>
         </div>
       </div>
 

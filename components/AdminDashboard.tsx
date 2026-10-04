@@ -722,8 +722,17 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                       >
                         ✏️ Edit Full Profile
                       </Link>
+                      <Link
+                        href={`/profile/${p.slug || p.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-card-payment"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', background: '#1c1c1e', border: '1px solid #333', color: '#ccc' }}
+                      >
+                        👁️ View Page
+                      </Link>
                       <button type="button" className="btn-card-payment" onClick={() => setPaymentModalProfile(p)} disabled={isLoading}>
-                        💳 Payment Details
+                        💳 Payment
                       </button>
                     </div>
 
@@ -1003,6 +1012,18 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                           >
                             {p.isArchived ? '↩️ Restore' : '📦 Archive'}
                           </button>
+
+                          {/* View Live Profile */}
+                          <Link
+                            href={`/profile/${p.slug || p.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-mini"
+                            title="View Public Profile Page"
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', background: '#1c1c1e', border: '1px solid #333', color: '#ccc' }}
+                          >
+                            👁️ View
+                          </Link>
 
                           {/* Edit Full Profile */}
                           <Link
