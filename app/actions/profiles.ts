@@ -21,12 +21,23 @@ async function uploadPhoto(file: File, slug: string): Promise<string | null> {
   try {
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
 
+    const r2AccountId = process.env.R2_ACCOUNT_ID;
+    const r2AccessKey = process.env.R2_ACCESS_KEY_ID;
+    const r2SecretKey = process.env.R2_SECRET_ACCESS_KEY;
+    const r2Bucket    = process.env.R2_BUCKET_NAME || 'ugx-bucket';
+    const r2PublicUrl = process.env.R2_PUBLIC_URL || 'https://pub-69c390381fd247b6a79b2d9ad87415e9.r2.dev';
+
+    if (!r2AccountId || !r2AccessKey || !r2SecretKey) {
+      console.warn('[uploadPhoto] R2 credentials not configured, skipping photo upload');
+      return null;
+    }
+
     const s3 = new S3Client({
       region:   'auto',
-      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      endpoint: `https://${r2AccountId}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId:     process.env.R2_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+        accessKeyId:     r2AccessKey,
+        secretAccessKey: r2SecretKey,
       },
     });
 
@@ -34,13 +45,13 @@ async function uploadPhoto(file: File, slug: string): Promise<string | null> {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     await s3.send(new PutObjectCommand({
-      Bucket:      process.env.R2_BUCKET_NAME!,
+      Bucket:      r2Bucket,
       Key:         key,
       Body:        buffer,
       ContentType: file.type || 'image/jpeg',
     }));
 
-    return `${process.env.R2_PUBLIC_URL}/${key}`;
+    return `${r2PublicUrl}/${key}`;
   } catch (err) {
     console.error('[uploadPhoto error]', err);
     return null;
@@ -150,7 +161,7 @@ export async function toggleProfileApproval(id: number, isApproved: boolean) {
     return { success: true };
   } catch (err) {
     console.error('[toggleProfileApproval]', err);
-    return { success: false, error: 'Failed to update approval status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -163,7 +174,7 @@ export async function toggleProfileArchive(id: number, isArchived: boolean) {
     return { success: true };
   } catch (err) {
     console.error('[toggleProfileArchive]', err);
-    return { success: false, error: 'Failed to update archive status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -176,7 +187,7 @@ export async function toggleProfileVip(id: number, isVip: boolean) {
     return { success: true };
   } catch (err) {
     console.error('[toggleProfileVip]', err);
-    return { success: false, error: 'Failed to update VIP status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -189,7 +200,7 @@ export async function toggleProfilePremium(id: number, isPremium: boolean) {
     return { success: true };
   } catch (err) {
     console.error('[toggleProfilePremium]', err);
-    return { success: false, error: 'Failed to update Premium status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -202,7 +213,7 @@ export async function toggleProfileNew(id: number, isNew: boolean) {
     return { success: true };
   } catch (err) {
     console.error('[toggleProfileNew]', err);
-    return { success: false, error: 'Failed to update New status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -215,7 +226,7 @@ export async function toggleProfileVerified(id: number, isVerified: boolean) {
     return { success: true };
   } catch (err) {
     console.error('[toggleProfileVerified]', err);
-    return { success: false, error: 'Failed to update Verified status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -245,7 +256,7 @@ export async function updatePaymentStatus(
     return { success: true };
   } catch (err) {
     console.error('[updatePaymentStatus]', err);
-    return { success: false, error: 'Failed to update payment status' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -323,7 +334,7 @@ export async function adminCreateProfile(formData: FormData): Promise<
 
   } catch (err) {
     console.error('[adminCreateProfile]', err);
-    return { success: false, error: 'Failed to create profile' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -393,7 +404,7 @@ export async function adminUpdateProfile(id: number, formData: FormData): Promis
     return { success: true };
   } catch (err) {
     console.error('[adminUpdateProfile]', err);
-    return { success: false, error: 'Failed to update profile' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -408,6 +419,12 @@ export async function deleteProfile(id: number): Promise<{ success: boolean; err
     return { success: true };
   } catch (err) {
     console.error('[deleteProfile]', err);
-    return { success: false, error: 'Failed to delete profile' };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+// ─── Admin: Refresh — fetch fresh profile list ────────────────────────────────
+
+export async function fetchAdminProfiles(): Promise<Profile[]> {
+  return getAdminProfiles();
 }

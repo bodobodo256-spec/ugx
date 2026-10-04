@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { type Profile } from '@/db/schema';
 import { LOCATIONS } from '@/data/locations';
 import {
@@ -15,6 +16,7 @@ import {
   adminCreateProfile,
   adminUpdateProfile,
   deleteProfile,
+  fetchAdminProfiles,
 } from '@/app/actions/profiles';
 import '@/app/admin/admin.css';
 
@@ -23,6 +25,9 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ initialProfiles }: AdminDashboardProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   // ── Authentication Gate ──
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -39,6 +44,7 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastIsError, setToastIsError] = useState(false);
 
   // ── Modals State ──
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -50,10 +56,33 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   const addPhotoInputRef = useRef<HTMLInputElement>(null);
   const editPhotoInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Sync profilesList when server re-fetches (router.refresh()) ──
+  useEffect(() => {
+    setProfilesList(initialProfiles);
+  }, [initialProfiles]);
+
   // ── Toast Notification Helper ──
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, isError = false) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3500);
+    setToastIsError(isError);
+    setTimeout(() => setToastMsg(null), isError ? 6000 : 3500);
+  };
+
+  // ── Manual Refresh (re-fetch from DB) ──
+  const handleRefresh = async () => {
+    showToast('Refreshing data from database...');
+    try {
+      const fresh = await fetchAdminProfiles();
+      if (fresh && fresh.length) {
+        setProfilesList(fresh);
+        showToast(`✅ Database synced (${fresh.length} profiles)!`);
+      }
+    } catch (err) {
+      showToast('❌ Refresh failed: ' + String(err), true);
+    }
+    startTransition(() => {
+      router.refresh();
+    });
   };
 
   // ── Login Handler ──
@@ -123,123 +152,133 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
     return { total, pendingApproval, pendingPayments, vipCount, premiumCount, archivedCount };
   }, [profilesList]);
 
+  // ── Generic action runner: calls server action, shows toast, then refreshes from DB ──
+  const runAction = async <T extends { success: boolean; error?: string }>(
+    label: string,
+    action: () => Promise<T>,
+    successMsg: string,
+    optimisticUpdate?: () => void
+  ) => {
+    optimisticUpdate?.();
+    const res = await action();
+    if (res.success) {
+      showToast(`✅ ${successMsg}`);
+      // Refresh state directly from DB
+      try {
+        const fresh = await fetchAdminProfiles();
+        if (fresh && fresh.length) setProfilesList(fresh);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+      startTransition(() => { router.refresh(); });
+    } else {
+      const errMsg = res.error ?? 'Unknown error';
+      showToast(`❌ ${label} failed: ${errMsg}`, true);
+      // Revert optimistic update by re-syncing from server
+      try {
+        const fresh = await fetchAdminProfiles();
+        if (fresh && fresh.length) setProfilesList(fresh);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+      startTransition(() => { router.refresh(); });
+    }
+  };
+
   // ── Quick Toggle Handlers ──
 
   const handleToggleApproval = async (profile: Profile) => {
     const nextVal = !profile.isApproved;
     setActionLoadingId(profile.id);
-    const res = await toggleProfileApproval(profile.id, nextVal);
+    await runAction(
+      'Approval',
+      () => toggleProfileApproval(profile.id, nextVal),
+      `${profile.name} is now ${nextVal ? 'Approved & Live ✅' : 'Revoked — Hidden from public'}`,
+      () => setProfilesList((prev) => prev.map((p) => p.id === profile.id ? { ...p, isApproved: nextVal } : p))
+    );
     setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
-        prev.map((p) => (p.id === profile.id ? { ...p, isApproved: nextVal } : p))
-      );
-      showToast(`${profile.name} is now ${nextVal ? 'Approved & Live' : 'Unapproved (Pending)'}`);
-    } else {
-      showToast('Error updating approval status');
-    }
   };
 
   const handleToggleArchive = async (profile: Profile) => {
     const nextVal = !profile.isArchived;
     setActionLoadingId(profile.id);
-    const res = await toggleProfileArchive(profile.id, nextVal);
+    await runAction(
+      'Archive',
+      () => toggleProfileArchive(profile.id, nextVal),
+      `${profile.name} ${nextVal ? 'archived 📦' : 'restored to active ↩️'}`,
+      () => setProfilesList((prev) => prev.map((p) => p.id === profile.id ? { ...p, isArchived: nextVal } : p))
+    );
     setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
-        prev.map((p) => (p.id === profile.id ? { ...p, isArchived: nextVal } : p))
-      );
-      showToast(`${profile.name} ${nextVal ? 'archived' : 'restored to active'}`);
-    } else {
-      showToast('Error updating archive status');
-    }
   };
 
   const handleToggleVip = async (profile: Profile) => {
     const isCurrentlyVip = profile.tier.startsWith('VIP');
     const nextVal = !isCurrentlyVip;
     setActionLoadingId(profile.id);
-    const res = await toggleProfileVip(profile.id, nextVal);
+    await runAction(
+      'VIP',
+      () => toggleProfileVip(profile.id, nextVal),
+      `${profile.name} tier → ${nextVal ? 'VIP ⭐' : 'Standard'}`,
+      () => setProfilesList((prev) => prev.map((p) => p.id === profile.id ? { ...p, tier: nextVal ? 'VIP' : 'Standard' } : p))
+    );
     setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
-        prev.map((p) => (p.id === profile.id ? { ...p, tier: nextVal ? 'VIP' : 'Standard' } : p))
-      );
-      showToast(`${profile.name} tier set to ${nextVal ? 'VIP ⭐' : 'Standard'}`);
-    } else {
-      showToast('Error updating VIP status');
-    }
   };
 
   const handleTogglePremium = async (profile: Profile) => {
     const nextVal = !profile.isPremium;
     setActionLoadingId(profile.id);
-    const res = await toggleProfilePremium(profile.id, nextVal);
+    await runAction(
+      'Premium',
+      () => toggleProfilePremium(profile.id, nextVal),
+      `${profile.name} Premium ${nextVal ? 'activated 💎' : 'removed'}`,
+      () => setProfilesList((prev) => prev.map((p) => p.id === profile.id ? { ...p, isPremium: nextVal } : p))
+    );
     setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
-        prev.map((p) => (p.id === profile.id ? { ...p, isPremium: nextVal } : p))
-      );
-      showToast(`${profile.name} premium badge ${nextVal ? 'Activated 💎' : 'Removed'}`);
-    } else {
-      showToast('Error updating Premium status');
-    }
   };
 
   const handleToggleNew = async (profile: Profile) => {
     const nextVal = !profile.isNew;
     setActionLoadingId(profile.id);
-    const res = await toggleProfileNew(profile.id, nextVal);
+    await runAction(
+      'New badge',
+      () => toggleProfileNew(profile.id, nextVal),
+      `${profile.name} "New" badge ${nextVal ? 'enabled 🆕' : 'removed'}`,
+      () => setProfilesList((prev) => prev.map((p) => p.id === profile.id ? { ...p, isNew: nextVal } : p))
+    );
     setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
-        prev.map((p) => (p.id === profile.id ? { ...p, isNew: nextVal } : p))
-      );
-      showToast(`${profile.name} "New" badge ${nextVal ? 'Enabled 🆕' : 'Disabled'}`);
-    } else {
-      showToast('Error updating New badge');
-    }
   };
 
   const handleQuickVerifyPayment = async (profile: Profile) => {
     const isCurrentlyPaid = profile.paymentStatus === 'verified';
     const nextStatus = isCurrentlyPaid ? 'pending' : 'verified';
     const amount = profile.tier.startsWith('VIP') ? 25000 : 10000;
-
     setActionLoadingId(profile.id);
-    const res = await updatePaymentStatus(profile.id, nextStatus, amount);
-    setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
-        prev.map((p) =>
-          p.id === profile.id
-            ? { ...p, paymentStatus: nextStatus, paymentAmount: amount, isApproved: nextStatus === 'verified' ? true : p.isApproved }
-            : p
+    await runAction(
+      'Payment',
+      () => updatePaymentStatus(profile.id, nextStatus, amount),
+      nextStatus === 'verified'
+        ? `Payment verified (${amount.toLocaleString()} UGX) — Profile approved! 💳`
+        : 'Payment marked as Pending',
+      () => setProfilesList((prev) =>
+        prev.map((p) => p.id === profile.id
+          ? { ...p, paymentStatus: nextStatus, paymentAmount: amount, isApproved: nextStatus === 'verified' ? true : p.isApproved }
+          : p
         )
-      );
-      showToast(
-        nextStatus === 'verified'
-          ? `Payment Verified (${amount.toLocaleString()} UGX) & Profile Approved!`
-          : 'Payment marked as Pending'
-      );
-    } else {
-      showToast('Error updating payment status');
-    }
+      )
+    );
+    setActionLoadingId(null);
   };
 
   const handleDeleteProfile = async (profile: Profile) => {
-    if (!confirm(`Are you sure you want to permanently delete ${profile.name}'s profile?`)) {
-      return;
-    }
+    if (!confirm(`Permanently delete ${profile.name}'s profile? This cannot be undone.`)) return;
     setActionLoadingId(profile.id);
-    const res = await deleteProfile(profile.id);
+    await runAction(
+      'Delete',
+      () => deleteProfile(profile.id),
+      `Deleted ${profile.name}`,
+      () => setProfilesList((prev) => prev.filter((p) => p.id !== profile.id))
+    );
     setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) => prev.filter((p) => p.id !== profile.id));
-      showToast(`Deleted ${profile.name}`);
-    } else {
-      showToast('Error deleting profile');
-    }
   };
 
   // ── Add Profile Form Submission ──
@@ -250,11 +289,19 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
 
     const res = await adminCreateProfile(formData);
     if (res.success) {
-      showToast('New profile created successfully!');
+      showToast('✅ New profile created and saved to database!');
       setIsAddModalOpen(false);
-      window.location.reload(); // Refresh to fetch fresh server state
+      try {
+        const fresh = await fetchAdminProfiles();
+        if (fresh && fresh.length) setProfilesList(fresh);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+      startTransition(() => { router.refresh(); });
     } else {
-      alert('error' in res ? res.error : 'Failed to create profile');
+      const err = 'error' in res ? res.error : 'Failed to create profile';
+      showToast(`❌ Create failed: ${err}`, true);
+      alert(`Failed to create profile:\n\n${err}`);
     }
   };
 
@@ -267,11 +314,19 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
 
     const res = await adminUpdateProfile(editingProfile.id, formData);
     if (res.success) {
-      showToast(`Updated ${editingProfile.name} successfully!`);
+      showToast(`✅ ${editingProfile.name} updated and saved to database!`);
       setEditingProfile(null);
-      window.location.reload(); // Refresh to fetch fresh server state
+      try {
+        const fresh = await fetchAdminProfiles();
+        if (fresh && fresh.length) setProfilesList(fresh);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+      startTransition(() => { router.refresh(); });
     } else {
-      alert('error' in res ? res.error : 'Failed to update profile');
+      const err = 'error' in res ? res.error : 'Failed to update profile';
+      showToast(`❌ Update failed: ${err}`, true);
+      alert(`Failed to update profile:\n\n${err}`);
     }
   };
 
@@ -286,21 +341,20 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
     const ref = (formData.get('paymentRef') as string) || '';
 
     setActionLoadingId(paymentModalProfile.id);
-    const res = await updatePaymentStatus(paymentModalProfile.id, status, amount, ref);
-    setActionLoadingId(null);
-    if (res.success) {
-      setProfilesList((prev) =>
+    await runAction(
+      'Payment update',
+      () => updatePaymentStatus(paymentModalProfile.id, status, amount, ref),
+      `Payment updated for ${paymentModalProfile.name}!`,
+      () => setProfilesList((prev) =>
         prev.map((p) =>
           p.id === paymentModalProfile.id
             ? { ...p, paymentStatus: status, paymentAmount: amount, paymentRef: ref, isApproved: status === 'verified' ? true : p.isApproved }
             : p
         )
-      );
-      showToast(`Payment updated for ${paymentModalProfile.name}!`);
-      setPaymentModalProfile(null);
-    } else {
-      alert('Failed to update payment');
-    }
+      )
+    );
+    setActionLoadingId(null);
+    setPaymentModalProfile(null);
   };
 
   // ── Render Authentication Screen ──
@@ -387,12 +441,23 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               🌐 View Live Site
             </Link>
             <button
+              type="button"
+              onClick={handleRefresh}
+              className="admin-btn admin-btn-secondary"
+              title="Sync latest data directly from Cloudflare D1"
+              disabled={isPending}
+            >
+              🔄 Refresh DB
+            </button>
+            <button
+              type="button"
               onClick={() => setIsAddModalOpen(true)}
               className="admin-btn admin-btn-primary"
             >
               ➕ Add New Profile
             </button>
             <button
+              type="button"
               onClick={handleLogout}
               className="admin-btn admin-btn-secondary"
               title="Logout from admin session"
@@ -985,7 +1050,7 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                 </button>
               </div>
 
-              <form onSubmit={handleEditSubmit}>
+              <form key={editingProfile.id} onSubmit={handleEditSubmit}>
                 <div className="admin-form-grid">
                   <div className="admin-field">
                     <label className="admin-label">Name *</label>
@@ -1245,8 +1310,14 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
 
         {/* ══ TOAST NOTIFICATION ══ */}
         {toastMsg && (
-          <div className="admin-toast">
-            <span>⚡</span>
+          <div
+            className="admin-toast"
+            style={{
+              borderColor: toastIsError ? '#FF2E55' : '#22C55E',
+              boxShadow: toastIsError ? '0 4px 20px rgba(255,46,85,0.4)' : '0 4px 20px rgba(34,197,94,0.3)',
+            }}
+          >
+            <span>{toastIsError ? '⚠️' : '⚡'}</span>
             <span>{toastMsg}</span>
           </div>
         )}
