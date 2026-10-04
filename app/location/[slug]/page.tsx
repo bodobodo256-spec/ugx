@@ -29,19 +29,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const baseUrl = getBaseUrl();
   const pageUrl = `${baseUrl}/location/${location.slug}`;
-  const title = `${location.name} Babes & Companions | Uganda Sexy Babes`;
-  const description = `Find verified babes, escorts, and dating companions in ${location.name}, Uganda. Browse verified profiles with real photos, WhatsApp & phone numbers. Connect in ${location.name} today.`;
+  const title = `${location.name} Escorts, Hookup Girls & Babes | Uganda Sexy Babes`;
+  const description = `Find verified escorts, hookup girls, and adult companions in ${location.name}, Uganda. Browse real photos, get direct WhatsApp & phone numbers. Book a hookup or date in ${location.name} today. Discreet, 18+.`;
 
   return {
     title,
     description,
     keywords: [
-      `${location.name} babes`,
       `${location.name} escorts`,
+      `${location.name} hookup`,
+      `${location.name} babes`,
       `${location.name} dating`,
-      `hookup in ${location.name}`,
-      `Ugandan girls in ${location.name}`,
-      `${location.name} companions`,
+      `hookup girls in ${location.name}`,
+      `casual encounters ${location.name}`,
+      `call girls ${location.name}`,
+      `sexy girls ${location.name}`,
+      `verified escorts ${location.name}`,
+      `${location.name} adult companions`,
+      `${location.name} Uganda escorts`,
+      `meet and fuck ${location.name}`,
     ],
     alternates: {
       canonical: pageUrl,
@@ -181,7 +187,8 @@ export default async function LocationPage({ params }: PageProps) {
               marginBottom: '0.75rem',
             }}
           >
-            Verified Babes in <span style={{ color: '#FFD600' }}>{location.name}</span>, Uganda
+            Verified Escorts &amp; Hookup Girls in{' '}
+            <span style={{ color: '#FFD600' }}>{location.name}</span>, Uganda
           </h1>
           <p
             style={{
@@ -192,8 +199,8 @@ export default async function LocationPage({ params }: PageProps) {
               fontSize: '0.95rem',
             }}
           >
-            Looking for dating, hookups, or high-class escort companions in {location.name}?
-            Connect directly with verified {location.name} babes via WhatsApp and phone calls.
+            Looking for a <strong>hookup, casual date, escort companion, or adult entertainment</strong> in {location.name}?
+            Browse verified profiles with real photos and connect directly via WhatsApp or phone. Fast, discreet, 18+ only.
           </p>
 
           <div
