@@ -22,11 +22,11 @@ const baseUrl = getBaseUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Uganda Sexy Babes | Dating, Hookups & Escort Companions Uganda',
+    default: 'Uganda Sexy Babes | Hookups, Escorts & Adult Dating Uganda',
     template: '%s | Uganda Sexy Babes',
   },
   description:
-    'Uganda Sexy Babes is the #1 dating and companionship directory in Uganda. Browse verified babes in Kampala, Entebbe, Jinja & Mbarara. Direct WhatsApp & phone contacts.',
+    'Uganda Sexy Babes — Uganda\'s #1 adult platform for hookups, dating, casual encounters & verified escort companions in Kampala, Entebbe, Jinja & Mbarara. Real girls, direct WhatsApp. Discreet, 18+.',
   keywords: SITE_CONFIG.keywords,
   authors: [{ name: 'Uganda Sexy Babes', url: baseUrl }],
   creator: 'Uganda Sexy Babes',
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Uganda Sexy Babes | Premier Dating & Companionship Network',
+    title: 'Uganda Sexy Babes | Hookups, Escorts & Adult Dating Uganda',
     description:
-      'Connect with verified babes and companions across Kampala, Entebbe, Jinja and major towns in Uganda. Direct phone & WhatsApp contacts.',
+      'Find verified escorts, hookup girls, and adult companions in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp & phone contacts. Discreet, 18+.',
     url: baseUrl,
     siteName: 'Uganda Sexy Babes',
     images: [
@@ -65,9 +65,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Uganda Sexy Babes | Dating & Companionship Uganda',
+    title: 'Uganda Sexy Babes | Hookups & Escorts Uganda',
     description:
-      'Meet verified babes and companions in Kampala and across Uganda. Direct WhatsApp & phone contacts.',
+      'Verified escorts and hookup girls in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp contact. 18+ adults only.',
     images: ['/logo.png'],
   },
   icons: {

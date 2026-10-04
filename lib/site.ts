@@ -1,8 +1,8 @@
 export const SITE_CONFIG = {
   name: 'Uganda Sexy Babes',
-  tagline: "Uganda's #1 Dating & Companionship Directory",
+  tagline: "Uganda's #1 Adult Hookup, Escort & Dating Platform",
   description:
-    'Browse Uganda Sexy Babes — the top dating and companionship site for meeting beautiful, verified babes in Kampala, Entebbe, Jinja and across Uganda. Direct WhatsApp and phone contact.',
+    'Uganda Sexy Babes — the #1 adult platform for hookups, dating, casual encounters, and verified escort companions in Kampala, Entebbe, Jinja, Mbarara and across Uganda. Real girls, direct WhatsApp contact. Discreet, fast, 18+.',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://ugandasexybabes.afrozex.com',
   keywords: [
     'uganda escorts',
