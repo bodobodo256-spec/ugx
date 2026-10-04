@@ -59,9 +59,8 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   // ── Login Handler ──
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default passkeys: admin256, admin123, or admin
-    const validKeys = ['admin256', 'admin123', 'admin', 'uganda2026'];
-    if (validKeys.includes(passkeyInput.trim().toLowerCase())) {
+    // Only accept the single configured passkey (case-sensitive)
+    if (passkeyInput.trim() === 'Badman256') {
       setIsAuthenticated(true);
       if (typeof window !== 'undefined') {
         localStorage.setItem('ug_admin_auth', 'true');
