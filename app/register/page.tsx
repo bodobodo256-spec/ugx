@@ -70,6 +70,19 @@ export default function RegisterPage() {
   return (
     <div className="register-wrapper">
       <div className="register-header">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <img
+            src="/logo.png"
+            alt="Uganda Sexy Babes Logo"
+            style={{
+              width: '74px',
+              height: '74px',
+              borderRadius: '50%',
+              border: '2px solid #FFD600',
+              boxShadow: '0 4px 20px rgba(255,214,0,0.3)',
+            }}
+          />
+        </div>
         <h1>Create Your <span>Profile</span></h1>
         {/* Uganda flag accent ribbon */}
         <div className="uganda-tri-bar" style={{ justifyContent: 'center', margin: '0.6rem auto 1rem' }} aria-hidden="true">

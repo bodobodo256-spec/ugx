@@ -338,6 +338,19 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
       <div className="admin-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: '440px', width: '100%', background: '#121212', border: '1px solid #333', borderRadius: '16px', padding: '2.5rem', boxShadow: '0 10px 40px rgba(0,0,0,0.8)' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <img
+              src="/logo.png"
+              alt="Uganda Sexy Babes Logo"
+              style={{
+                width: '68px',
+                height: '68px',
+                borderRadius: '50%',
+                margin: '0 auto 0.9rem',
+                display: 'block',
+                border: '2px solid #FFD600',
+                boxShadow: '0 4px 18px rgba(255,214,0,0.3)',
+              }}
+            />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.8rem' }}>
               <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff' }}>Uganda</span>
               <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FF2E55', fontStyle: 'italic' }}>Sexy</span>
@@ -396,17 +409,31 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
         {/* ══ HEADER ══ */}
         <header className="admin-header">
           <div className="admin-header-left">
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <h1 className="admin-title">
-                  <span style={{ color: '#FFD600' }}>Uganda Sexy Babes</span>
-                  <span style={{ fontSize: '1rem', color: '#888' }}>/</span>
-                  <span style={{ fontSize: '1.1rem' }}>Admin Dashboard</span>
-                </h1>
-                <span className="admin-badge">LIVE ADMIN</span>
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#777', marginTop: '2px' }}>
-                Manage models, approve pending submissions, verify weekly mobile money payments (10,000shs / 25,000shs), and configure VIP/Premium statuses.
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <img
+                src="/logo.png"
+                alt="Uganda Sexy Babes Logo"
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  border: '2px solid #FFD600',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 10px rgba(255,214,0,0.25)',
+                }}
+              />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <h1 className="admin-title">
+                    <span style={{ color: '#FFD600' }}>Uganda Sexy Babes</span>
+                    <span style={{ fontSize: '1rem', color: '#888' }}>/</span>
+                    <span style={{ fontSize: '1.1rem' }}>Admin Dashboard</span>
+                  </h1>
+                  <span className="admin-badge">LIVE ADMIN</span>
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#777', marginTop: '2px' }}>
+                  Manage models, approve pending submissions, verify weekly mobile money payments (10,000shs / 25,000shs), and configure VIP/Premium statuses.
+                </div>
               </div>
             </div>
           </div>
