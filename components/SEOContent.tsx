@@ -260,13 +260,14 @@ export default function SEOContent() {
             'Top Escorts Sites in Uganda',
             'Call Girls Kampala',
             'Adult Entertainment Uganda',
-            'Hookup Calls UG',
             'Verified Hookup Girls',
             'Nightlife Companions',
             'Sexy Escort Girls',
             'Companion Services Uganda',
             'Female Escorts Kampala',
             'Hookup & Date Uganda',
+            'One Night Stand Uganda',
+            'NSA Dates Uganda',
           ].map((keyword) => (
             <span
               key={keyword}
