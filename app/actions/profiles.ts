@@ -21,7 +21,7 @@ async function uploadPhoto(file: File, slug: string): Promise<string | null> {
   try {
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
 
-    const r2AccountId = process.env.R2_ACCOUNT_ID;
+    const r2AccountId = process.env.R2_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID || '75a566f7db81d6c9e2b0dbbcff7f4ca0';
     const r2AccessKey = process.env.R2_ACCESS_KEY_ID;
     const r2SecretKey = process.env.R2_SECRET_ACCESS_KEY;
     const r2Bucket    = process.env.R2_BUCKET_NAME || 'ugx-bucket';
@@ -340,12 +340,35 @@ export async function adminCreateProfile(formData: FormData): Promise<
 
 // ─── Admin: Update Full Profile ──────────────────────────────────────────────
 
-export async function adminUpdateProfile(id: number, formData: FormData): Promise<
-  { success: true } | { success: false; error: string }
-> {
+export async function adminUpdateProfile(
+  idOrFormData: number | string | FormData,
+  maybeFormData?: FormData
+): Promise<{ success: true } | { success: false; error: string }> {
   try {
+    let id: number;
+    let formData: FormData;
+
+    if (idOrFormData instanceof FormData) {
+      formData = idOrFormData;
+      const rawId = formData.get('id') as string;
+      id = parseInt(rawId, 10);
+    } else if (maybeFormData instanceof FormData) {
+      formData = maybeFormData;
+      id = typeof idOrFormData === 'number' ? idOrFormData : parseInt(String(idOrFormData), 10);
+      if (isNaN(id) && formData.has('id')) {
+        id = parseInt(formData.get('id') as string, 10);
+      }
+    } else {
+      return { success: false, error: 'Invalid form submission: no form data provided.' };
+    }
+
+    if (!id || isNaN(id) || id <= 0) {
+      return { success: false, error: `Invalid profile ID (${id}). Cannot update profile.` };
+    }
+
     const name        = (formData.get('name')        as string)?.trim();
-    const age         = parseInt(formData.get('age') as string, 10);
+    const rawAge      = formData.get('age')          as string;
+    const age         = rawAge ? parseInt(rawAge, 10) : NaN;
     const location    = (formData.get('location')    as string)?.trim();
     const city        = (formData.get('city')        as string)?.trim();
     const tier        = ((formData.get('tier')       as string) ?? 'Standard') as NewProfile['tier'];
@@ -355,18 +378,25 @@ export async function adminUpdateProfile(id: number, formData: FormData): Promis
     const customPhotoUrl = ((formData.get('photoUrl') as string) ?? '').trim();
     const photoFile   = formData.get('photo')        as File | null;
 
+    if (!name || isNaN(age) || !location || !city || !phone || !whatsapp) {
+      return {
+        success: false,
+        error: 'Please fill in required fields: Name, Age, Location, City, Phone, and WhatsApp.',
+      };
+    }
+
     const isApproved  = formData.get('isApproved') === 'true';
     const isArchived  = formData.get('isArchived') === 'true';
-    const isPremium   = formData.get('isPremium') === 'true';
+    const isPremium   = formData.get('isPremium') === 'true' || tier === 'Premium';
     const isNew       = formData.get('isNew') === 'true';
     const isVerified  = formData.get('isVerified') === 'true';
     const paymentStatus = ((formData.get('paymentStatus') as string) ?? 'pending') as Profile['paymentStatus'];
     const paymentAmount = parseInt((formData.get('paymentAmount') as string) || '0', 10);
     const paymentRef  = ((formData.get('paymentRef') as string) ?? '').trim();
-    const status      = ((formData.get('status') as string) ?? 'recent') as Profile['status'];
+    const rawStatus   = formData.get('status') as string | null;
     const picsCount   = parseInt((formData.get('picsCount') as string) || '0', 10);
 
-    const updateFields: Partial<Profile> = {
+    const updateFields: Record<string, any> = {
       name,
       age,
       location,
@@ -383,9 +413,12 @@ export async function adminUpdateProfile(id: number, formData: FormData): Promis
       paymentStatus,
       paymentAmount: isNaN(paymentAmount) ? 0 : paymentAmount,
       paymentRef: paymentRef || null,
-      status,
-      picsCount,
+      picsCount: isNaN(picsCount) ? 0 : picsCount,
     };
+
+    if (rawStatus === 'online' || rawStatus === 'recent') {
+      updateFields.status = rawStatus;
+    }
 
     if (customPhotoUrl) {
       updateFields.photoUrl = customPhotoUrl;
@@ -393,7 +426,9 @@ export async function adminUpdateProfile(id: number, formData: FormData): Promis
 
     if (photoFile && photoFile.size > 0) {
       const uploaded = await uploadPhoto(photoFile, `edit-${id}`);
-      if (uploaded) updateFields.photoUrl = uploaded;
+      if (uploaded) {
+        updateFields.photoUrl = uploaded;
+      }
     }
 
     const db = getDb();

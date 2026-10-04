@@ -315,9 +315,60 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    const res = await adminUpdateProfile(editingProfile.id, formData);
+    // Explicitly guarantee ID is present in formData
+    formData.set('id', String(editingProfile.id));
+
+    // Capture submitted values for immediate UI update
+    const submittedName = (formData.get('name') as string)?.trim() || editingProfile.name;
+    const submittedAge = parseInt(formData.get('age') as string, 10) || editingProfile.age;
+    const submittedCity = (formData.get('city') as string) || editingProfile.city;
+    const submittedLocation = (formData.get('location') as string) || editingProfile.location;
+    const submittedTier = ((formData.get('tier') as string) || editingProfile.tier) as Profile['tier'];
+    const submittedPhone = (formData.get('phone') as string) || editingProfile.phone;
+    const submittedWhatsapp = (formData.get('whatsapp') as string) || editingProfile.whatsapp;
+    const submittedAbout = ((formData.get('about') as string) ?? editingProfile.about);
+    const submittedPhotoUrl = (formData.get('photoUrl') as string)?.trim() || editingProfile.photoUrl;
+    const submittedStatus = (formData.get('status') as Profile['status']) || editingProfile.status;
+    const submittedIsApproved = formData.get('isApproved') === 'true';
+    const submittedIsArchived = formData.get('isArchived') === 'true';
+    const submittedIsPremium = formData.get('isPremium') === 'true' || submittedTier === 'Premium';
+    const submittedIsNew = formData.get('isNew') === 'true';
+    const submittedIsVerified = formData.get('isVerified') === 'true';
+    const submittedPaymentStatus = (formData.get('paymentStatus') as Profile['paymentStatus']) || editingProfile.paymentStatus;
+    const submittedPaymentAmount = parseInt(formData.get('paymentAmount') as string, 10) || editingProfile.paymentAmount;
+    const submittedPaymentRef = (formData.get('paymentRef') as string) ?? editingProfile.paymentRef;
+
+    const res = await adminUpdateProfile(formData);
     if (res.success) {
-      showToast(`✅ ${editingProfile.name} updated and saved to database!`);
+      showToast(`✅ ${submittedName} updated and saved to database!`);
+      // Update local state immediately so user sees the change right away
+      setProfilesList((prev) =>
+        prev.map((p) =>
+          p.id === editingProfile.id
+            ? {
+                ...p,
+                name: submittedName,
+                age: submittedAge,
+                city: submittedCity,
+                location: submittedLocation,
+                tier: submittedTier,
+                phone: submittedPhone,
+                whatsapp: submittedWhatsapp,
+                about: submittedAbout,
+                photoUrl: submittedPhotoUrl,
+                status: submittedStatus,
+                isApproved: submittedIsApproved,
+                isArchived: submittedIsArchived,
+                isPremium: submittedIsPremium,
+                isNew: submittedIsNew,
+                isVerified: submittedIsVerified,
+                paymentStatus: submittedPaymentStatus,
+                paymentAmount: submittedPaymentAmount,
+                paymentRef: submittedPaymentRef,
+              }
+            : p
+        )
+      );
       setEditingProfile(null);
       try {
         const fresh = await fetchAdminProfiles();
@@ -1225,6 +1276,7 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               </div>
 
               <form key={editingProfile.id} onSubmit={handleEditSubmit}>
+                <input type="hidden" name="id" value={editingProfile.id} />
                 <div className="admin-form-grid">
                   <div className="admin-field">
                     <label className="admin-label">Name *</label>
@@ -1273,6 +1325,14 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                   <div className="admin-field">
                     <label className="admin-label">Pics Count</label>
                     <input type="number" name="picsCount" className="admin-input" defaultValue={editingProfile.picsCount} />
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">Activity Status</label>
+                    <select name="status" className="admin-modal-select" defaultValue={editingProfile.status ?? 'recent'}>
+                      <option value="online">Online Now 🟢</option>
+                      <option value="recent">Recently Active ⚪</option>
+                    </select>
                   </div>
                 </div>
 

@@ -12,7 +12,7 @@ import { drizzle as drizzleProxy } from 'drizzle-orm/sqlite-proxy';
 import { drizzle as drizzleD1 } from 'drizzle-orm/d1';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-// Fallback IDs from wrangler.jsonc
+// Fallback IDs for Cloudflare D1
 const DEFAULT_ACCOUNT_ID = '75a566f7db81d6c9e2b0dbbcff7f4ca0';
 const DEFAULT_DB_ID      = '3c441669-470d-41aa-a1f7-46ec8f6db422';
 
