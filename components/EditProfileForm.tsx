@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { LOCATIONS } from '@/data/locations';
 import { type Profile } from '@/db/schema';
 import { adminUpdateProfile, deleteProfile } from '@/app/actions/profiles';
+import { compressImage } from '@/lib/image-compress';
 
 interface EditProfileFormProps {
   profile: Profile;
@@ -69,20 +70,27 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      const objectUrl = URL.createObjectURL(file);
+      const optimized = await compressImage(file);
+      setSelectedFile(optimized);
+      const objectUrl = URL.createObjectURL(optimized);
       setPreviewImage(objectUrl);
     }
   };
 
-  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setNewGalleryFiles(prev => [...prev, ...files]);
-    const previews = files.map(f => URL.createObjectURL(f));
+    
+    const optimizedFiles: File[] = [];
+    for (const f of files) {
+      optimizedFiles.push(await compressImage(f));
+    }
+
+    setNewGalleryFiles(prev => [...prev, ...optimizedFiles]);
+    const previews = optimizedFiles.map(f => URL.createObjectURL(f));
     setNewGalleryPreviews(prev => [...prev, ...previews]);
   };
 
@@ -98,7 +106,21 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setNewVideoFiles(prev => [...prev, ...files]);
+
+    const MAX_VIDEO_SIZE = 4.5 * 1024 * 1024; // 4.5MB Vercel limit
+    const validFiles: File[] = [];
+
+    for (const f of files) {
+      if (f.size > MAX_VIDEO_SIZE) {
+        showToast(`⚠️ "${f.name}" is ${(f.size / 1024 / 1024).toFixed(1)}MB. Max video upload size is 4.5MB.`, true);
+      } else {
+        validFiles.push(f);
+      }
+    }
+
+    if (validFiles.length) {
+      setNewVideoFiles(prev => [...prev, ...validFiles]);
+    }
   };
 
   const removeExistingVideo = (idx: number) => {
@@ -149,16 +171,43 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
     newVideoFiles.forEach(f => formData.append('videos', f));
 
     startTransition(async () => {
-      const res = await adminUpdateProfile(formData);
-      if (res.success) {
-        showToast(`✅ Profile for ${name} saved successfully to Cloudflare D1!`);
-        setTimeout(() => {
-          router.push('/admin');
-          router.refresh();
-        }, 1200);
-      } else {
-        const err = 'error' in res ? res.error : 'Failed to update profile';
-        showToast(`❌ Update failed: ${err}`, true);
+      try {
+        // 1. Try dedicated REST API endpoint first (immune to Server Action hash changes)
+        const response = await fetch('/api/admin/profile', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const res = await response.json();
+          if (res.success) {
+            showToast(`✅ Profile for ${name} saved successfully to Cloudflare D1!`);
+            setTimeout(() => {
+              router.push('/admin');
+              router.refresh();
+            }, 1200);
+            return;
+          } else {
+            showToast(`❌ Update failed: ${res.error || 'Unknown error'}`, true);
+            return;
+          }
+        }
+
+        // If API returned non-OK, try fallback to Server Action
+        const res = await adminUpdateProfile(formData);
+        if (res.success) {
+          showToast(`✅ Profile for ${name} saved successfully to Cloudflare D1!`);
+          setTimeout(() => {
+            router.push('/admin');
+            router.refresh();
+          }, 1200);
+        } else {
+          const err = 'error' in res ? res.error : 'Failed to update profile';
+          showToast(`❌ Update failed: ${err}`, true);
+        }
+      } catch (err: any) {
+        console.error('Save error:', err);
+        showToast(`❌ Save error: ${err?.message || 'Network error occurred while saving.'}`, true);
       }
     });
   };

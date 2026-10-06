@@ -177,8 +177,12 @@ export async function createProfile(formData: FormData): Promise<
       whatsapp,
     } satisfies NewProfile);
 
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (revErr) {
+      console.warn('[revalidatePath warning]', revErr);
+    }
     return { success: true, slug };
 
   } catch (err) {
@@ -462,8 +466,12 @@ export async function adminCreateProfile(formData: FormData): Promise<
       whatsapp,
     } satisfies NewProfile);
 
-    revalidatePath('/');
-    revalidatePath('/admin');
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+    } catch (revErr) {
+      console.warn('[revalidatePath warning]', revErr);
+    }
     return { success: true, profileId: Date.now() };
 
   } catch (err) {
@@ -612,10 +620,14 @@ export async function adminUpdateProfile(
     const db = getDb();
     await db.update(profiles).set(updateFields).where(eq(profiles.id, id));
 
-    revalidatePath('/');
-    revalidatePath('/admin');
-    revalidatePath(`/admin/edit/${id}`);
-    revalidatePath(`/profile/${id}`);
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+      revalidatePath(`/admin/edit/${id}`);
+      revalidatePath(`/profile/${id}`);
+    } catch (revErr) {
+      console.warn('[revalidatePath warning]', revErr);
+    }
     return { success: true };
   } catch (err) {
     console.error('[adminUpdateProfile]', err);
@@ -629,9 +641,13 @@ export async function deleteProfile(id: number): Promise<{ success: boolean; err
   try {
     const db = getDb();
     await db.delete(profiles).where(eq(profiles.id, id));
-    revalidatePath('/');
-    revalidatePath('/admin');
-    revalidatePath(`/profile/${id}`);
+    try {
+      revalidatePath('/');
+      revalidatePath('/admin');
+      revalidatePath(`/profile/${id}`);
+    } catch (revErr) {
+      console.warn('[revalidatePath warning]', revErr);
+    }
     return { success: true };
   } catch (err) {
     console.error('[deleteProfile]', err);

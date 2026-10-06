@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { createProfile } from '@/app/actions/profiles';
+import { compressImage } from '@/lib/image-compress';
 
 export default function RegisterPage() {
   const [name, setName] = useState('Angel');
@@ -27,25 +28,32 @@ export default function RegisterPage() {
   // Video state
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      photoFileRef.current = file;
+      const optimized = await compressImage(file);
+      photoFileRef.current = optimized;
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
           setPhotoPreview(event.target.result as string);
         }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(optimized);
     }
   };
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setGalleryFiles(prev => [...prev, ...files]);
-    const previews = files.map(f => URL.createObjectURL(f));
+
+    const optimized: File[] = [];
+    for (const f of files) {
+      optimized.push(await compressImage(f));
+    }
+
+    setGalleryFiles(prev => [...prev, ...optimized]);
+    const previews = optimized.map(f => URL.createObjectURL(f));
     setGalleryPreviews(prev => [...prev, ...previews]);
   };
 
@@ -57,48 +65,66 @@ export default function RegisterPage() {
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
-    setVideoFiles(prev => [...prev, ...files]);
+
+    const MAX_VIDEO_SIZE = 4.5 * 1024 * 1024;
+    const valid: File[] = [];
+
+    for (const f of files) {
+      if (f.size > MAX_VIDEO_SIZE) {
+        setError(`Video "${f.name}" is ${(f.size / 1024 / 1024).toFixed(1)}MB. Max video upload size is 4.5MB.`);
+      } else {
+        valid.push(f);
+      }
+    }
+
+    if (valid.length) {
+      setVideoFiles(prev => [...prev, ...valid]);
+    }
   };
 
   const removeVideo = (idx: number) => {
     setVideoFiles(prev => prev.filter((_, i) => i !== idx));
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    // Derive city from location string (e.g. "Kololo, Kampala" → "Kampala")
-    const cityPart = location.includes(',') ? location.split(',').pop()!.trim() : location.trim();
+    try {
+      // Derive city from location string (e.g. "Kololo, Kampala" → "Kampala")
+      const cityPart = location.includes(',') ? location.split(',').pop()!.trim() : location.trim();
 
-    const formData = new FormData();
-    formData.set('name',        name);
-    formData.set('age',         String(age));
-    formData.set('location',    location);
-    formData.set('city',        cityPart);
-    formData.set('tier',        tier);
-    formData.set('phone',       phone);
-    formData.set('whatsapp',    whatsapp);
-    formData.set('about',       bio);
-    formData.set('payment_ref', paymentRef);
-    if (photoFileRef.current) {
-      formData.set('photo', photoFileRef.current);
-    }
-    // Gallery photos
-    galleryFiles.forEach(f => formData.append('gallery', f));
-    // Videos
-    videoFiles.forEach(f => formData.append('videos', f));
+      const formData = new FormData();
+      formData.set('name',        name);
+      formData.set('age',         String(age));
+      formData.set('location',    location);
+      formData.set('city',        cityPart);
+      formData.set('tier',        tier);
+      formData.set('phone',       phone);
+      formData.set('whatsapp',    whatsapp);
+      formData.set('about',       bio);
+      formData.set('payment_ref', paymentRef);
+      if (photoFileRef.current) {
+        formData.set('photo', photoFileRef.current);
+      }
+      // Gallery photos
+      galleryFiles.forEach(f => formData.append('gallery', f));
+      // Videos
+      videoFiles.forEach(f => formData.append('videos', f));
 
-    const result = await createProfile(formData);
+      const result = await createProfile(formData);
 
-    setIsLoading(false);
-    if (result.success) {
-      setIsSubmitted(true);
-      window.scrollTo({ top: 120, behavior: 'smooth' });
-    } else {
-      setError('error' in result ? result.error : 'Unknown error');
+      setIsLoading(false);
+      if (result.success) {
+        setIsSubmitted(true);
+        window.scrollTo({ top: 120, behavior: 'smooth' });
+      } else {
+        setError('error' in result ? result.error : 'Unknown error');
+      }
+    } catch (err: any) {
+      setIsLoading(false);
+      setError(err?.message || 'A network error occurred while submitting. Please try again.');
     }
   };
 
