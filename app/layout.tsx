@@ -22,11 +22,11 @@ const baseUrl = getBaseUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Uganda Sexy Babes | Hookups, Escorts & Adult Encounters Uganda',
+    default: 'Uganda Sexy Babes — #1 Uganda Babes, Escorts & Hookups Directory',
     template: '%s | Uganda Sexy Babes',
   },
   description:
-    'Uganda Sexy Babes — Uganda\'s #1 adult platform for hookups, casual encounters & verified escort companions in Kampala, Entebbe, Jinja & Mbarara. Real girls, direct WhatsApp. Discreet, 18+.',
+    'Uganda Sexy Babes — Uganda\'s #1 adult platform for Uganda babes, sexy babes Uganda, hookups & verified escort companions in Kampala, Entebbe, Jinja & Mbarara. Real girls, direct WhatsApp. Discreet, 18+.',
   keywords: SITE_CONFIG.keywords,
   authors: [{ name: 'Uganda Sexy Babes', url: baseUrl }],
   creator: 'Uganda Sexy Babes',
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Uganda Sexy Babes | Hookups, Escorts & Adult Encounters Uganda',
+    title: 'Uganda Sexy Babes | Uganda Babes, Escorts & Hookups',
     description:
-      'Find verified escorts, hookup girls, and adult companions in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp & phone contacts. Discreet, 18+.',
+      'Find verified Uganda babes, sexy babes Uganda, escorts, and hookup companions in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp contacts. Discreet, 18+.',
     url: baseUrl,
     siteName: 'Uganda Sexy Babes',
     images: [
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
         url: '/logo.png',
         width: 800,
         height: 800,
-        alt: 'Uganda Sexy Babes',
+        alt: 'Uganda Sexy Babes Logo',
       },
     ],
     locale: 'en_UG',
@@ -65,13 +65,17 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Uganda Sexy Babes | Hookups & Escorts Uganda',
+    title: 'Uganda Sexy Babes | Uganda Babes & Escorts',
     description:
-      'Verified escorts and hookup girls in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp contact. 18+ adults only.',
+      'Verified Uganda babes, sexy babes Uganda, and hookup companions in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp contact. 18+ adults only.',
     images: ['/logo.png'],
   },
   icons: {
-    icon: '/logo.png',
+    icon: [
+      { url: '/logo.png', sizes: '192x192', type: 'image/png' },
+      { url: '/logo.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/logo.png',
     apple: '/logo.png',
   },
   verification: {
@@ -88,7 +92,20 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Uganda Sexy Babes',
+    alternateName: [
+      'Uganda Sexy Babes',
+      'UgandaBabes',
+      'Sexy Babes Uganda',
+      'Uganda Babes',
+      'ugandasexybabes.afrozex.com',
+    ],
     url: baseUrl,
+    image: `${baseUrl}/logo.png`,
+    publisher: {
+      '@type': 'Organization',
+      name: 'Uganda Sexy Babes',
+      logo: `${baseUrl}/logo.png`,
+    },
     potentialAction: {
       '@type': 'SearchAction',
       target: `${baseUrl}/?search={search_term_string}`,
@@ -101,8 +118,14 @@ export default function RootLayout({
     '@type': 'Organization',
     name: 'Uganda Sexy Babes',
     url: baseUrl,
-    logo: `${baseUrl}/logo.png`,
-    description: 'Premier adult hookup, companionship and escort directory across Uganda.',
+    logo: {
+      '@type': 'ImageObject',
+      url: `${baseUrl}/logo.png`,
+      width: 512,
+      height: 512,
+    },
+    image: `${baseUrl}/logo.png`,
+    description: 'Uganda\'s #1 adult hookup, companionship, Uganda babes and escort directory across Uganda.',
   };
 
   return (
@@ -112,6 +135,10 @@ export default function RootLayout({
           name="google-site-verification"
           content="DnvygG6G-4p43JBIRk4YBzoUjvi5QfxkZjPaDSV_LO8"
         />
+        <link rel="icon" type="image/png" sizes="192x192" href="/logo.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="shortcut icon" href="/logo.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}

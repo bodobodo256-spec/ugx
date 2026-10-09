@@ -101,6 +101,9 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
                 <span className="brand-word brand-sexy">Sexy</span>
                 <span className="brand-word brand-babes">Babes</span>
               </h1>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--gray-4, #b0b0b0)', textAlign: 'center', marginTop: '0.5rem', marginBottom: '1rem', letterSpacing: '0.02em' }}>
+                Uganda&apos;s #1 Directory for <strong style={{ color: '#FFD600' }}>Uganda Babes</strong>, <strong style={{ color: '#FF2E55' }}>Sexy Babes Uganda</strong> &amp; <strong style={{ color: '#FFF' }}>Kampala Escorts</strong>
+              </h2>
             </section>
 
             {/* ══ LAYOUT: SIDEBAR + CARDS AREA ══ */}
