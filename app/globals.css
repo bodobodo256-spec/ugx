@@ -1692,3 +1692,284 @@ button { cursor: pointer; font-family: var(--font); }
   }
 }
 
+/* ══ BECOME AN ESCORT & PACKAGES STYLES ══ */
+.become-escort-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 46, 85, 0.15);
+  border: 1px solid rgba(255, 46, 85, 0.4);
+  color: #FF2E55;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.45rem 1.1rem;
+  border-radius: 50px;
+  margin-bottom: 0.85rem;
+}
+
+.package-selection-screen {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 0.5rem 2rem;
+}
+
+.packages-intro-box {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.packages-grid-step1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 768px) {
+  .packages-grid-step1 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Package Card Base */
+.pkg-card {
+  position: relative;
+  background: var(--black-2);
+  border-radius: 18px;
+  padding: 2.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Standard Green Package Card */
+.pkg-card--standard {
+  border: 2px solid #10B981;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, rgba(12, 24, 18, 0.98) 100%);
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.12);
+}
+
+.pkg-card--standard:hover {
+  transform: translateY(-5px);
+  border-color: #00E676;
+  box-shadow: 0 14px 45px rgba(0, 230, 118, 0.25);
+}
+
+/* VIP Gold Package Card */
+.pkg-card--vip {
+  border: 2px solid #FFD600;
+  background: linear-gradient(180deg, rgba(255, 214, 0, 0.12) 0%, rgba(26, 22, 10, 0.98) 100%);
+  box-shadow: 0 8px 30px rgba(255, 214, 0, 0.2);
+}
+
+.pkg-card--vip:hover {
+  transform: translateY(-5px);
+  border-color: #FFE54C;
+  box-shadow: 0 14px 50px rgba(255, 214, 0, 0.38);
+}
+
+.pkg-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  margin-bottom: 1.25rem;
+}
+
+.pkg-badge--standard {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.pkg-badge--vip {
+  background: linear-gradient(135deg, #FFD600, #FFA000);
+  color: #000;
+  font-weight: 900;
+  box-shadow: 0 2px 12px rgba(255, 214, 0, 0.4);
+}
+
+.pkg-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.pkg-desc {
+  font-size: 0.88rem;
+  color: var(--gray-4);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.pkg-price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 1.1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.pkg-price--standard {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #10B981;
+  letter-spacing: -0.02em;
+}
+
+.pkg-price--vip {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #FFD600;
+  letter-spacing: -0.02em;
+}
+
+.pkg-cycle {
+  font-size: 0.88rem;
+  color: var(--gray-4);
+  font-weight: 600;
+}
+
+.pkg-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.pkg-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.88rem;
+  color: #e5e5e5;
+  line-height: 1.45;
+}
+
+.pkg-check--green {
+  color: #10B981;
+  font-weight: 900;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.pkg-check--gold {
+  color: #FFD600;
+  font-weight: 900;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.pkg-cta-btn {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+
+.pkg-cta-btn--standard {
+  background: #10B981;
+  color: #000;
+}
+
+.pkg-cta-btn--standard:hover {
+  background: #00E676;
+  box-shadow: 0 6px 25px rgba(0, 230, 118, 0.45);
+  transform: translateY(-2px);
+}
+
+.pkg-cta-btn--vip {
+  background: linear-gradient(135deg, #FFD600 0%, #FFA000 100%);
+  color: #000;
+}
+
+.pkg-cta-btn--vip:hover {
+  background: linear-gradient(135deg, #FFE54C 0%, #FFB300 100%);
+  box-shadow: 0 6px 25px rgba(255, 214, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Step Bar on Top of Form */
+.package-selected-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: var(--black-2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.btn-change-pkg {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--gray-4);
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-change-pkg:hover {
+  border-color: #fff;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Tier Plan Cards inside Form (Green & Gold themes) */
+.tier-plan-card--standard {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+.tier-plan-card--standard:hover {
+  border-color: #10B981;
+}
+.tier-plan-card--standard.active {
+  border-color: #10B981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, var(--black-3) 100%);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+}
+.tier-plan-card--standard.active .tier-plan-title {
+  color: #10B981;
+}
+
+.tier-plan-card--vip {
+  border-color: rgba(255, 214, 0, 0.4);
+}
+.tier-plan-card--vip:hover {
+  border-color: #FFD600;
+}
+.tier-plan-card--vip.active {
+  border-color: #FFD600;
+  background: linear-gradient(135deg, rgba(255, 214, 0, 0.15) 0%, var(--black-3) 100%);
+  box-shadow: 0 0 22px rgba(255, 214, 0, 0.3);
+}
+.tier-plan-card--vip.active .tier-plan-title {
+  color: #FFD600;
+}
+

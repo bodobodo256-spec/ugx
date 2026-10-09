@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [whatsapp, setWhatsapp] = useState('256700000001');
   const [bio, setBio] = useState('I am a sweet, beautiful Ugandan lady available for private hookups, escort appointments and intimate companionship. Discreet and classy.');
   const [tier, setTier] = useState<'Standard' | 'VIP'>('VIP');
+  const [step, setStep] = useState<'package' | 'form'>('package');
   const [paymentRef, setPaymentRef] = useState('');
   const [photoPreview, setPhotoPreview] = useState('https://spcdn.shortpixel.ai/spio/ret_img+q_cdnize+to_auto+s_webp:avif/ugandaescorts.net/wp-content/uploads/1790519050120/17905211817455-320x480.jpg');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -131,6 +132,7 @@ export default function RegisterPage() {
 
   return (
     <div className="register-wrapper">
+      {/* ══ HEADER ══ */}
       <div className="register-header">
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
           <img
@@ -142,7 +144,10 @@ export default function RegisterPage() {
             }}
           />
         </div>
-        <h1>Create Your <span>Profile</span></h1>
+        <div>
+          <span className="become-escort-badge">💋 Become an Escort / Adult Companion</span>
+        </div>
+        <h1>Become an Escort — <span>{step === 'package' ? 'Choose Your Package' : 'Create Your Profile'}</span></h1>
         {/* Uganda flag accent ribbon */}
         <div className="uganda-tri-bar" style={{ justifyContent: 'center', margin: '0.6rem auto 1rem' }} aria-hidden="true">
           <span className="bar-stripe bar-black"></span>
@@ -150,38 +155,219 @@ export default function RegisterPage() {
           <span className="bar-stripe bar-red"></span>
         </div>
         <p>
-          Join Uganda's #1 verified adult hookup and escort platform. Showcase your beauty, set your rates and terms, and connect with clients across Uganda.
+          {step === 'package'
+            ? "Join Uganda's #1 verified adult hookup and escort platform. Select your weekly package below to start your application and receive direct inquiries from clients across Uganda."
+            : "Complete your profile information below. Once submitted, your profile will be verified and published within minutes."}
         </p>
       </div>
 
-      {/* Success Banner */}
-      {isSubmitted && (
-        <div className="form-success-banner active" id="successBanner">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <div>
-            <strong>Profile Submitted Successfully!</strong>
-            <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.95 }}>
-              Thank you, {name}! Your {tier} profile ({tier === 'VIP' ? '25,000 UGX' : '10,000 UGX'}/weekly) has been submitted. Our admin will verify your payment and approve your listing shortly.
+      {/* ══ STEP 1: PACKAGES SCREEN ══ */}
+      {step === 'package' && (
+        <div className="package-selection-screen">
+          <div className="packages-intro-box">
+            <h2>Select Your Weekly Membership Package</h2>
+            <p style={{ color: 'var(--gray-4)', fontSize: '0.92rem', maxWidth: '580px', margin: '0.5rem auto 0', lineHeight: 1.5 }}>
+              Choose your preferred tier to proceed to the registration form. You keep 100% of your earnings and set your own rates.
             </p>
+          </div>
+
+          <div className="packages-grid-step1">
+            {/* ── STANDARD ESCORT (10,000shs) — GREEN THEME ── */}
+            <div className="pkg-card pkg-card--standard">
+              <div>
+                <span className="pkg-badge pkg-badge--standard">Standard Membership</span>
+                <h3 className="pkg-title">Standard Escort</h3>
+                <p className="pkg-desc">Essential directory presence for verified ladies ready to receive calls &amp; hookups.</p>
+                
+                <div className="pkg-price-wrap">
+                  <span className="pkg-price--standard">10,000shs</span>
+                  <span className="pkg-cycle">/ weekly</span>
+                </div>
+
+                <ul className="pkg-features">
+                  <li>
+                    <span className="pkg-check--green">✓</span>
+                    <span>Standard directory listing across all Ugandan cities</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--green">✓</span>
+                    <span>Direct Phone Calls &amp; WhatsApp contact buttons on your card</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--green">✓</span>
+                    <span>Unlimited profile views &amp; client inquiries</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--green">✓</span>
+                    <span>Full bio, services list &amp; photo gallery upload</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--green">✓</span>
+                    <span>7 days active verified display</span>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                type="button"
+                className="pkg-cta-btn pkg-cta-btn--standard"
+                onClick={() => {
+                  setTier('Standard');
+                  setStep('form');
+                  window.scrollTo({ top: 120, behavior: 'smooth' });
+                }}
+              >
+                Select Standard (10,000shs) →
+              </button>
+            </div>
+
+            {/* ── VIP ELITE ESCORT (25,000shs) — GOLD THEME ── */}
+            <div className="pkg-card pkg-card--vip">
+              <div>
+                <span className="pkg-badge pkg-badge--vip">⭐ Maximum Visibility • Recommended</span>
+                <h3 className="pkg-title">⭐ VIP Elite Escort</h3>
+                <p className="pkg-desc">Top featured placement, prominent spotlight &amp; up to 10x more client inquiries.</p>
+                
+                <div className="pkg-price-wrap">
+                  <span className="pkg-price--vip">25,000shs</span>
+                  <span className="pkg-cycle">/ weekly</span>
+                </div>
+
+                <ul className="pkg-features">
+                  <li>
+                    <span className="pkg-check--gold">⭐</span>
+                    <span><strong>Pinned to ⭐ VIP Top Grid</strong> on homepage</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--gold">⭐</span>
+                    <span><strong>Gold VIP Badge</strong> &amp; distinctive visual spotlight</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--gold">⭐</span>
+                    <span><strong>Green Verified Checkmark</strong> on your card</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--gold">⭐</span>
+                    <span><strong>10x More Direct Inquiries</strong> on WhatsApp &amp; calls</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--gold">⭐</span>
+                    <span>Priority placement in all city &amp; location search filters</span>
+                  </li>
+                  <li>
+                    <span className="pkg-check--gold">⭐</span>
+                    <span>Multi-photo gallery &amp; video showcase preview support</span>
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                type="button"
+                className="pkg-cta-btn pkg-cta-btn--vip"
+                onClick={() => {
+                  setTier('VIP');
+                  setStep('form');
+                  window.scrollTo({ top: 120, behavior: 'smooth' });
+                }}
+              >
+                Select VIP Elite (25,000shs) →
+              </button>
+            </div>
+          </div>
+
+          {/* Reassurance strip */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '14px',
+            padding: '1.25rem 1.5rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1rem',
+            textAlign: 'center'
+          }}>
+            <div>
+              <div style={{ fontSize: '1.3rem', marginBottom: '0.25rem' }}>🔒</div>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>100% Discreet &amp; Private</div>
+              <div style={{ color: 'var(--gray-4)', fontSize: '0.78rem' }}>Your data &amp; phone contacts are securely handled</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.3rem', marginBottom: '0.25rem' }}>💰</div>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>Direct Client Payments</div>
+              <div style={{ color: 'var(--gray-4)', fontSize: '0.78rem' }}>You set your rates. Zero commission deducted</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.3rem', marginBottom: '0.25rem' }}>⚡</div>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.88rem' }}>Fast Activation</div>
+              <div style={{ color: 'var(--gray-4)', fontSize: '0.78rem' }}>Direct activation upon payment to 0707683295</div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Error Banner */}
-      {error && (
-        <div className="form-success-banner active" style={{ background: 'linear-gradient(135deg, #c0392b, #e74c3c)' }} id="errorBanner">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <div>
-            <strong>Submission Failed</strong>
-            <p style={{ margin: 0, fontSize: '0.82rem', opacity: 0.9 }}>{error}</p>
+      {/* ══ STEP 2: APPLICATION FORM ══ */}
+      {step === 'form' && (
+        <>
+          {/* Top Selection Bar */}
+          <div className="package-selected-bar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn-change-pkg"
+                onClick={() => {
+                  setStep('package');
+                  window.scrollTo({ top: 120, behavior: 'smooth' });
+                }}
+              >
+                ← Change Package
+              </button>
+              <span style={{ fontSize: '0.85rem', color: 'var(--gray-4)' }}>Selected Plan:</span>
+              <span
+                style={{
+                  background: tier === 'VIP' ? 'rgba(255, 214, 0, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                  border: `1px solid ${tier === 'VIP' ? '#FFD600' : '#10B981'}`,
+                  color: tier === 'VIP' ? '#FFD600' : '#10B981',
+                  padding: '0.25rem 0.85rem',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: 800
+                }}
+              >
+                {tier === 'VIP' ? '⭐ VIP Elite Escort — 25,000shs / week' : 'Standard Escort — 10,000shs / week'}
+              </span>
+            </div>
+            <span style={{ fontSize: '0.82rem', color: 'var(--gray-4)' }}>Step 2 of 2: Application Details</span>
           </div>
-        </div>
-      )}
-      <div className="register-layout">
+
+          {/* Success Banner */}
+          {isSubmitted && (
+            <div className="form-success-banner active" id="successBanner">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <div>
+                <strong>Profile Submitted Successfully!</strong>
+                <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.95 }}>
+                  Thank you, {name}! Your {tier === 'VIP' ? 'VIP Elite' : 'Standard'} escort profile ({tier === 'VIP' ? '25,000 UGX' : '10,000 UGX'}/weekly) has been submitted. Our admin will verify your payment to <strong>0707683295</strong> and approve your listing shortly.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && (
+            <div className="form-success-banner active" style={{ background: 'linear-gradient(135deg, #c0392b, #e74c3c)' }} id="errorBanner">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <strong>Submission Failed</strong>
+                <p style={{ margin: 0, fontSize: '0.82rem', opacity: 0.9 }}>{error}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="register-layout">
 
         {/* ══ FORM COLUMN ══ */}
         <div className="form-card">
@@ -364,12 +550,12 @@ export default function RegisterPage() {
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/>
                 </svg>
-                5. Select Listing Tier &amp; Weekly Pricing
+                5. Selected Membership Package
               </div>
               <div className="tier-plans-grid">
-                {/* Standard */}
+                {/* Standard (Green Theme) */}
                 <label
-                  className={`tier-plan-card ${tier === 'Standard' ? 'active' : ''}`}
+                  className={`tier-plan-card tier-plan-card--standard ${tier === 'Standard' ? 'active' : ''}`}
                   onClick={() => setTier('Standard')}
                 >
                   <input
@@ -379,9 +565,10 @@ export default function RegisterPage() {
                     className="tier-plan-radio"
                     checked={tier === 'Standard'}
                     onChange={() => setTier('Standard')}
+                    style={{ accentColor: '#10B981' }}
                   />
-                  <div className="tier-plan-title">Standard Babe</div>
-                  <div className="tier-plan-price" style={{ color: '#FFD600', fontWeight: 800 }}>
+                  <div className="tier-plan-title">Standard Escort</div>
+                  <div className="tier-plan-price" style={{ color: '#10B981', fontWeight: 800 }}>
                     10,000shs <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gray-4)' }}>/ weekly</span>
                   </div>
                   <ul className="tier-plan-features">
@@ -392,9 +579,9 @@ export default function RegisterPage() {
                   </ul>
                 </label>
 
-                {/* VIP */}
+                {/* VIP (Gold Theme) */}
                 <label
-                  className={`tier-plan-card ${tier === 'VIP' ? 'active' : ''}`}
+                  className={`tier-plan-card tier-plan-card--vip ${tier === 'VIP' ? 'active' : ''}`}
                   onClick={() => setTier('VIP')}
                 >
                   <input
@@ -404,17 +591,18 @@ export default function RegisterPage() {
                     className="tier-plan-radio"
                     checked={tier === 'VIP'}
                     onChange={() => setTier('VIP')}
+                    style={{ accentColor: '#FFD600' }}
                   />
-                  <div className="tier-plan-title">⭐ VIP Elite Babe</div>
-                  <div className="tier-plan-price" style={{ color: '#FF2E55', fontWeight: 800 }}>
+                  <div className="tier-plan-title">⭐ VIP Elite Escort</div>
+                  <div className="tier-plan-price" style={{ color: '#FFD600', fontWeight: 800 }}>
                     25,000shs <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--gray-4)' }}>/ weekly</span>
                   </div>
                   <ul className="tier-plan-features">
-                    <li>✓ Pinned in ⭐ VIP Top Grid</li>
-                    <li>✓ Gold VIP Badge &amp; Visual Glow</li>
-                    <li>✓ Green Verified Checkmark</li>
-                    <li>✓ 10x More Direct Inquiries</li>
-                    <li>✓ Priority placement on home page</li>
+                    <li>⭐ Pinned in ⭐ VIP Top Grid</li>
+                    <li>⭐ Gold VIP Badge &amp; Visual Glow</li>
+                    <li>⭐ Green Verified Checkmark</li>
+                    <li>⭐ 10x More Direct Inquiries</li>
+                    <li>⭐ Priority placement on home page</li>
                   </ul>
                 </label>
               </div>
@@ -428,28 +616,59 @@ export default function RegisterPage() {
                 </svg>
                 6. Weekly Payment Verification
               </div>
-              <div style={{ background: 'rgba(255, 214, 0, 0.05)', border: '1px solid rgba(255, 214, 0, 0.3)', borderRadius: '10px', padding: '1.25rem', marginBottom: '1.25rem' }}>
+              <div style={{
+                background: tier === 'VIP' ? 'rgba(255, 214, 0, 0.06)' : 'rgba(16, 185, 129, 0.06)',
+                border: `1.5px solid ${tier === 'VIP' ? '#FFD600' : '#10B981'}`,
+                borderRadius: '12px',
+                padding: '1.25rem',
+                marginBottom: '1.25rem'
+              }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.75rem' }}>
                   <span style={{ color: '#FFF', fontWeight: 600 }}>Plan Selected:</span>
-                  <span style={{ color: '#FFD600', fontWeight: 800, fontSize: '1.1rem' }}>
-                    {tier === 'VIP' ? '⭐ VIP — 25,000shs / week' : 'Standard — 10,000shs / week'}
+                  <span style={{ color: tier === 'VIP' ? '#FFD600' : '#10B981', fontWeight: 800, fontSize: '1.1rem' }}>
+                    {tier === 'VIP' ? '⭐ VIP Elite — 25,000shs / week' : 'Standard Escort — 10,000shs / week'}
                   </span>
                 </div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--gray-5)', margin: '0 0 0.85rem 0', lineHeight: 1.5 }}>
-                  Please send your weekly fee ({tier === 'VIP' ? '25,000shs' : '10,000shs'}) to our verified Mobile Money accounts below:
+                <p style={{ fontSize: '0.88rem', color: 'var(--gray-5)', margin: '0 0 1rem 0', lineHeight: 1.5 }}>
+                  Please send your weekly fee (<strong style={{ color: tier === 'VIP' ? '#FFD600' : '#10B981' }}>{tier === 'VIP' ? '25,000shs' : '10,000shs'}</strong>) to our official Mobile Money / Airtel Money number below:
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div style={{ background: '#1c1b12', border: '1px solid #FFD600', borderRadius: '8px', padding: '0.75rem' }}>
-                    <div style={{ color: '#FFD600', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>MTN Mobile Money</div>
-                    <div style={{ color: '#fff', fontSize: '1.05rem', fontWeight: 800, letterSpacing: '0.5px' }}>0787 000 000</div>
-                    <div style={{ color: 'var(--gray-4)', fontSize: '0.75rem' }}>Name: Uganda Sexy Babes</div>
+
+                <div style={{
+                  background: '#141414',
+                  border: `2px solid ${tier === 'VIP' ? '#FFD600' : '#10B981'}`,
+                  borderRadius: '12px',
+                  padding: '1.1rem 1.25rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                  marginBottom: '1.15rem'
+                }}>
+                  <div>
+                    <div style={{ color: tier === 'VIP' ? '#FFD600' : '#10B981', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Official Mobile Money / Airtel Money Number
+                    </div>
+                    <div style={{ color: '#fff', fontSize: '1.6rem', fontWeight: 900, letterSpacing: '1px', marginTop: '0.2rem' }}>
+                      0707683295
+                    </div>
+                    <div style={{ color: 'var(--gray-4)', fontSize: '0.82rem', marginTop: '0.2rem' }}>
+                      Account Name: <strong style={{ color: '#fff' }}>Uganda Sexy Babes</strong>
+                    </div>
                   </div>
-                  <div style={{ background: '#1c1212', border: '1px solid #FF2E55', borderRadius: '8px', padding: '0.75rem' }}>
-                    <div style={{ color: '#FF2E55', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Airtel Money</div>
-                    <div style={{ color: '#fff', fontSize: '1.05rem', fontWeight: 800, letterSpacing: '0.5px' }}>0708 000 000</div>
-                    <div style={{ color: 'var(--gray-4)', fontSize: '0.75rem' }}>Name: Uganda Sexy Babes</div>
+                  <div style={{
+                    background: tier === 'VIP' ? 'rgba(255, 214, 0, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                    color: tier === 'VIP' ? '#FFD600' : '#10B981',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.88rem',
+                    fontWeight: 800,
+                    border: `1px solid ${tier === 'VIP' ? 'rgba(255,214,0,0.3)' : 'rgba(16,185,129,0.3)'}`
+                  }}>
+                    Amount: {tier === 'VIP' ? '25,000 UGX' : '10,000 UGX'}
                   </div>
                 </div>
+
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" htmlFor="paymentRef">
                     Payment Reference / Sender Phone Number <span className="req">*</span>
@@ -458,13 +677,13 @@ export default function RegisterPage() {
                     type="text"
                     id="paymentRef"
                     className="form-input"
-                    placeholder="e.g. 078XXXXXXX or Mobile Money Tx ID"
+                    placeholder="e.g. 0707XXXXXX or Mobile Money Tx ID"
                     value={paymentRef}
                     onChange={(e) => setPaymentRef(e.target.value)}
                     required
                   />
-                  <small style={{ color: 'var(--gray-4)', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>
-                    Enter your MoMo sender number or transaction code so the admin can verify your payment instantly.
+                  <small style={{ color: 'var(--gray-4)', fontSize: '0.78rem', marginTop: '6px', display: 'block' }}>
+                    Enter the phone number you used to send Mobile Money to <strong>0707683295</strong> or your transaction ID so the admin activates your profile immediately.
                   </small>
                 </div>
               </div>
@@ -672,6 +891,8 @@ export default function RegisterPage() {
           </article>
         </div>
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 }
