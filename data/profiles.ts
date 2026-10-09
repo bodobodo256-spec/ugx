@@ -121,7 +121,7 @@ export const PROFILES: Profile[] = [
     picsCount: 11,
     vidsCount: 4,
     photoUrl: 'https://spcdn.shortpixel.ai/spio/ret_img+q_cdnize+to_auto+s_webp:avif/ugandaescorts.net/wp-content/uploads/1790597387539/17906024703773-320x480.jpg',
-    about: 'I love to laugh and enjoy life to the fullest. Available for dates, parties and private encounters…',
+    about: 'I love to laugh and enjoy life to the fullest. Available for hookups, parties and private encounters…',
     phone: '+256700000006',
     whatsapp: '256700000006'
   },
@@ -140,7 +140,7 @@ export const PROFILES: Profile[] = [
     status: 'online',
     picsCount: 4,
     photoUrl: 'https://spcdn.shortpixel.ai/spio/ret_img+q_cdnize+to_auto+s_webp:avif/ugandaescorts.net/wp-content/uploads/1790305326844/17903053681132-320x480.jpg',
-    about: 'Sweet college babe looking to make friends and go on fun dates in Gulu.',
+    about: 'Sweet college babe available for discreet hookups and private company in Gulu.',
     phone: '+256700000007',
     whatsapp: '256700000007'
   },

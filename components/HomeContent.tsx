@@ -254,10 +254,10 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
               <div className="about-inner">
                 <h2>About Uganda Sexy Babes</h2>
                 <p>
-                  Uganda Sexy Babes is Uganda&apos;s #1 all-purpose adult platform for <strong>hookups, dating, casual encounters, escort services, and meet-and-mingle</strong> experiences. Whether you&apos;re in Kampala, Entebbe, Jinja, Mbarara or any major town across Uganda — find a verified babe ready to meet, hookup, and have a good time.
+                  Uganda Sexy Babes is Uganda&apos;s #1 adult platform for <strong>hookups, casual encounters, escort services, and private adult companionship</strong>. Whether you&apos;re in Kampala, Entebbe, Jinja, Mbarara or any major town across Uganda — find a verified babe ready to meet, hookup, and have a good time.
                 </p>
                 <p>
-                  All profiles are manually reviewed and verified. Every listed companion is 18+, voluntarily registered, and provides <strong>real photos and direct WhatsApp or phone contact</strong>. No fake ads, no scam agencies. Browse, pick a babe you like, and connect directly for hookups, massage, full-package services, casual dates, and unforgettable adult entertainment.
+                  All profiles are manually reviewed and verified. Every listed companion is 18+, voluntarily registered, and provides <strong>real photos and direct WhatsApp or phone contact</strong>. No fake ads, no scam agencies. Browse, pick a babe you like, and connect directly for hookups, massage, full-package services, escort appointments, and unforgettable adult entertainment.
                 </p>
                 <div className="about-features">
                   <div className="feature-item"><span className="feature-icon">✅</span><span>Verified Profiles</span></div>

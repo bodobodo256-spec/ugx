@@ -7,7 +7,7 @@ const FAQS = [
   {
     question: 'What is Uganda Sexy Babes?',
     answer:
-      'Uganda Sexy Babes is an all-purpose adult platform for dating, hookups, casual encounters, and meet-and-mingle experiences across Uganda. Whether you want a no-strings-attached hookup, a steamy date, massage and companionship, or a verified escort companion in Kampala, Entebbe, or Jinja — we connect you directly with real, verified ladies.',
+      'Uganda Sexy Babes is an adult platform for hookups, casual encounters, and verified escort services across Uganda. Whether you want a no-strings-attached hookup, erotic massage and companionship, or a verified escort in Kampala, Entebbe, or Jinja — we connect you directly with real, verified ladies.',
   },
   {
     question: 'How do I hook up with a babe in Uganda?',
@@ -17,7 +17,7 @@ const FAQS = [
   {
     question: 'Are these escorts and hookup girls verified?',
     answer:
-      'Yes. All profiles with the VERIFIED badge have been manually reviewed by our team. VIP and Premium babes provide genuine photos, real WhatsApp numbers, and are actively available for dates, hookups, massage sessions, and companionship.',
+      'Yes. All profiles with the VERIFIED badge have been manually reviewed by our team. VIP and Premium babes provide genuine photos, real WhatsApp numbers, and are actively available for hookups, escort appointments, massage sessions, and companionship.',
   },
   {
     question: 'Which cities in Uganda have the most escorts and hookup babes?',
@@ -84,7 +84,7 @@ export default function SEOContent() {
             letterSpacing: '-0.02em',
           }}
         >
-          Uganda&apos;s #1 Adult Hookup, Dating &amp; Escort Platform
+          Uganda&apos;s #1 Adult Hookup &amp; Escorts Platform
         </h2>
         <p
           style={{
@@ -94,9 +94,9 @@ export default function SEOContent() {
             marginBottom: '1rem',
           }}
         >
-          Welcome to <strong>Uganda Sexy Babes</strong> — Uganda&apos;s most trusted all-purpose adult platform for{' '}
-          <strong>hookups, dating, casual encounters, escorts, and meet-and-mingle</strong> experiences. Whether
-          you want a no-strings-attached hookup in Kampala, a sensual massage in Entebbe, a steamy date in Jinja,
+          Welcome to <strong>Uganda Sexy Babes</strong> — Uganda&apos;s most trusted adult platform for{' '}
+          <strong>hookups, casual encounters, escort services, and private adult companionship</strong>. Whether
+          you want a no-strings-attached hookup in Kampala, a sensual massage in Entebbe, an escort in Jinja,
           or a discreet companion in Mbarara — our verified directory connects you directly with real, hot Ugandan babes
           who are ready to meet.
         </p>
@@ -111,7 +111,7 @@ export default function SEOContent() {
           Every companion on this platform is 18+ and has voluntarily listed their profile. You get{' '}
           <strong>real photos, direct WhatsApp contact, and confirmed phone numbers</strong> — no fake ads,
           no scam agencies. Browse, pick, and connect instantly for hookups, massage and full-package services,
-          casual sex dates, and unforgettable adult entertainment across Uganda.
+          casual adult encounters, and unforgettable private adult entertainment across Uganda.
         </p>
         <p
           style={{
@@ -247,7 +247,7 @@ export default function SEOContent() {
             'Hookup Girls Uganda',
             'Casual Encounters Kampala',
             'Meet & Mingle Uganda',
-            'No-Strings-Attached Dates',
+            'No-Strings-Attached Hookups',
             'Affordable Escorts Kampala',
             'VIP Escorts Uganda',
             'Ebony Sexy Babes',
@@ -265,9 +265,9 @@ export default function SEOContent() {
             'Sexy Escort Girls',
             'Companion Services Uganda',
             'Female Escorts Kampala',
-            'Hookup & Date Uganda',
+            'Adult Hookups Uganda',
             'One Night Stand Uganda',
-            'NSA Dates Uganda',
+            'NSA Hookups Uganda',
           ].map((keyword) => (
             <span
               key={keyword}

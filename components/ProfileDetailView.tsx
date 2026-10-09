@@ -294,9 +294,9 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
         <div className="detail-safety-box">
           <div className="safety-icon">🛡️</div>
           <div>
-            <strong>Discreet &amp; Safe Dating Guarantee</strong>
+            <strong>Discreet &amp; Safe Encounters Guarantee</strong>
             <p>
-              Uganda Sexy Babes is a verified directory for consensual adult dating, escorts, and private companions in Uganda. Always verify details beforehand, respect each model's boundaries, and practice safe, responsible encounters.
+              Uganda Sexy Babes is a verified directory for consensual adult hookups, escorts, and private companions in Uganda. Always verify details beforehand, respect each model's boundaries, and practice safe, responsible encounters.
             </p>
           </div>
         </div>

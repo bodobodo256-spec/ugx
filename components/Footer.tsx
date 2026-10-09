@@ -23,7 +23,7 @@ export default function Footer() {
                 </span>
               </div>
             </div>
-            <p className="footer-tagline">Uganda&apos;s #1 Adult Hookup, Escort &amp; Dating Platform</p>
+            <p className="footer-tagline">Uganda&apos;s #1 Adult Hookup &amp; Escorts Platform</p>
           </div>
           <div className="footer-links">
             <div className="footer-col">

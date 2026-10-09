@@ -1,6 +1,6 @@
 # Uganda Sexy Babes (Next.js App)
 
-A modern, high-performance Next.js application for Uganda's premier verified dating and companionship directory.
+A modern, high-performance Next.js application for Uganda's premier verified adult hookup and escort directory.
 
 ## 🚀 Features
 - **Next.js 15 App Router** (`app/layout.tsx`, `app/page.tsx`, `app/register/page.tsx`)

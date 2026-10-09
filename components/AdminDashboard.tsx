@@ -1132,7 +1132,7 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                     className="admin-textarea"
                     rows={3}
                     placeholder="Enter model description, services, personal introduction..."
-                    defaultValue="Sweet, friendly and discreet companion. Available for dinner dates and private company."
+                    defaultValue="Sweet, friendly and discreet escort. Available for private hookups and intimate companionship."
                   />
                 </div>
 

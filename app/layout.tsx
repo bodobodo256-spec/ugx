@@ -22,11 +22,11 @@ const baseUrl = getBaseUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Uganda Sexy Babes | Hookups, Escorts & Adult Dating Uganda',
+    default: 'Uganda Sexy Babes | Hookups, Escorts & Adult Encounters Uganda',
     template: '%s | Uganda Sexy Babes',
   },
   description:
-    'Uganda Sexy Babes — Uganda\'s #1 adult platform for hookups, dating, casual encounters & verified escort companions in Kampala, Entebbe, Jinja & Mbarara. Real girls, direct WhatsApp. Discreet, 18+.',
+    'Uganda Sexy Babes — Uganda\'s #1 adult platform for hookups, casual encounters & verified escort companions in Kampala, Entebbe, Jinja & Mbarara. Real girls, direct WhatsApp. Discreet, 18+.',
   keywords: SITE_CONFIG.keywords,
   authors: [{ name: 'Uganda Sexy Babes', url: baseUrl }],
   creator: 'Uganda Sexy Babes',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Uganda Sexy Babes | Hookups, Escorts & Adult Dating Uganda',
+    title: 'Uganda Sexy Babes | Hookups, Escorts & Adult Encounters Uganda',
     description:
       'Find verified escorts, hookup girls, and adult companions in Kampala, Entebbe, Jinja & across Uganda. Direct WhatsApp & phone contacts. Discreet, 18+.',
     url: baseUrl,
@@ -102,7 +102,7 @@ export default function RootLayout({
     name: 'Uganda Sexy Babes',
     url: baseUrl,
     logo: `${baseUrl}/logo.png`,
-    description: 'Premier dating, companionship and escort directory across Uganda.',
+    description: 'Premier adult hookup, companionship and escort directory across Uganda.',
   };
 
   return (

@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const baseUrl = getBaseUrl();
   const pageUrl = `${baseUrl}/location/${location.slug}`;
   const title = `${location.name} Escorts, Hookup Girls & Babes | Uganda Sexy Babes`;
-  const description = `Find verified escorts, hookup girls, and adult companions in ${location.name}, Uganda. Browse real photos, get direct WhatsApp & phone numbers. Book a hookup or date in ${location.name} today. Discreet, 18+.`;
+  const description = `Find verified escorts, hookup girls, and adult companions in ${location.name}, Uganda. Browse real photos, get direct WhatsApp & phone numbers. Book a hookup or escort companion in ${location.name} today. Discreet, 18+.`;
 
   return {
     title,
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       `${location.name} escorts`,
       `${location.name} hookup`,
       `${location.name} babes`,
-      `${location.name} dating`,
+      `${location.name} adult companions`,
       `hookup girls in ${location.name}`,
       `casual encounters ${location.name}`,
       `call girls ${location.name}`,
@@ -130,7 +130,7 @@ export default async function LocationPage({ params }: PageProps) {
   const collectionSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: `${location.name} Babes & Dating Companions`,
+    name: `${location.name} Babes & Escort Companions`,
     description: `Verified profiles and escort companions in ${location.name}, Uganda.`,
     url: pageUrl,
     numberOfItems: cityProfiles.length,
@@ -199,7 +199,7 @@ export default async function LocationPage({ params }: PageProps) {
               fontSize: '0.95rem',
             }}
           >
-            Looking for a <strong>hookup, casual date, escort companion, or adult entertainment</strong> in {location.name}?
+            Looking for a <strong>hookup, escort companion, sensual massage, or adult entertainment</strong> in {location.name}?
             Browse verified profiles with real photos and connect directly via WhatsApp or phone. Fast, discreet, 18+ only.
           </p>
 

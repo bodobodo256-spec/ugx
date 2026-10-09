@@ -19,7 +19,7 @@ async function run() {
   formData.set('tier', 'VIP');
   formData.set('phone', '+256700000001');
   formData.set('whatsapp', '256700000001');
-  formData.set('about', 'I am a sweet, beautiful Ugandan lady who loves good conversations, private dates and romantic evenings. Discreet and classy.');
+  formData.set('about', 'I am a sweet, beautiful Ugandan lady available for private hookups, escort service and intimate companionship. Discreet and classy.');
   formData.set('status', 'recent');
   formData.set('picsCount', '1');
   formData.set('isApproved', 'true');
