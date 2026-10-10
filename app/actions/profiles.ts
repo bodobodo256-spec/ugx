@@ -21,7 +21,7 @@ export async function uploadMedia(file: File, folder: string): Promise<string | 
   try {
     const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
 
-    const r2AccountId = process.env.R2_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID || '75a566f7db81d6c9e2b0dbbcff7f4ca0';
+    const r2AccountId = process.env.R2_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
     const r2AccessKey = process.env.R2_ACCESS_KEY_ID;
     const r2SecretKey = process.env.R2_SECRET_ACCESS_KEY;
     const r2Bucket    = process.env.R2_BUCKET_NAME || 'ugx-bucket';
@@ -70,10 +70,6 @@ export async function uploadMedia(file: File, folder: string): Promise<string | 
   }
 }
 
-// Backward-compatible alias
-async function uploadPhoto(file: File, slug: string): Promise<string | null> {
-  return uploadMedia(file, slug);
-}
 
 // ─── Public: createProfile (from registration page) ──────────────────────────
 
@@ -89,6 +85,8 @@ export async function createProfile(formData: FormData): Promise<
     const phone       = (formData.get('phone')       as string)?.trim();
     const whatsapp    = (formData.get('whatsapp')    as string)?.trim();
     const about       = ((formData.get('about')      as string) ?? '').trim();
+    const category    = ((formData.get('category')   as string) ?? 'Adult Hookup').trim();
+    const services    = ((formData.get('services')   as string) ?? '').trim();
     const paymentRef  = ((formData.get('payment_ref') as string) ?? '').trim();
 
     // 1. Featured profile photo
@@ -158,6 +156,8 @@ export async function createProfile(formData: FormData): Promise<
       location,
       city,
       tier,
+      category,
+      services,
       isNew:         true,
       isVerified:    false,
       isApproved:    false, // Must be approved by admin before appearing publicly
@@ -197,8 +197,8 @@ export async function getProfiles(): Promise<Profile[]> {
   try {
     const db = getDb();
     const all = await db.select().from(profiles).orderBy(desc(profiles.createdAt));
-    // Only return profiles that are approved and not archived
-    return all.filter((p) => p.isApproved !== false && !p.isArchived);
+    // Only return profiles that are explicitly approved and not archived
+    return all.filter((p) => p.isApproved === true && !p.isArchived);
   } catch (err) {
     console.error('[getProfiles]', err);
     return [];
@@ -440,7 +440,7 @@ export async function adminCreateProfile(formData: FormData): Promise<
 
     const db = getDb();
 
-    await db.insert(profiles).values({
+    const inserted = await db.insert(profiles).values({
       name,
       slug,
       age,
@@ -464,7 +464,7 @@ export async function adminCreateProfile(formData: FormData): Promise<
       about,
       phone,
       whatsapp,
-    } satisfies NewProfile);
+    } satisfies NewProfile).returning({ id: profiles.id });
 
     try {
       revalidatePath('/');
@@ -472,7 +472,8 @@ export async function adminCreateProfile(formData: FormData): Promise<
     } catch (revErr) {
       console.warn('[revalidatePath warning]', revErr);
     }
-    return { success: true, profileId: Date.now() };
+    const profileId = inserted[0]?.id || Date.now();
+    return { success: true, profileId };
 
   } catch (err) {
     console.error('[adminCreateProfile]', err);
@@ -592,7 +593,7 @@ export async function adminUpdateProfile(
     }
     if (rawGalleryUrls !== null || newGalleryFiles.length > 0) {
       updateFields.galleryUrls = galleryList.length ? JSON.stringify(galleryList) : null;
-      updateFields.picsCount = (updateFields.photoUrl || customPhotoUrl ? 1 : 1) + galleryList.length;
+      updateFields.picsCount = (updateFields.photoUrl || customPhotoUrl ? 1 : 0) + galleryList.length;
     }
 
     // 3. Videos

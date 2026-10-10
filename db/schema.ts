@@ -17,8 +17,10 @@ export const profiles = sqliteTable('profiles', {
   paymentAmount: integer('payment_amount').default(0),
   paymentRef:    text('payment_ref'),
   status:        text('status', { enum: ['online', 'recent'] }).notNull().default('recent'),
+  category:      text('category'),
+  services:      text('services'),
   picsCount:     integer('pics_count').notNull().default(0),
-  vidsCount:     integer('vids_count'),
+  vidsCount:     integer('vids_count').notNull().default(0),
   photoUrl:      text('photo_url'),
   galleryUrls:   text('gallery_urls'),
   videoUrls:     text('video_urls'),
@@ -26,6 +28,7 @@ export const profiles = sqliteTable('profiles', {
   phone:         text('phone').notNull(),
   whatsapp:      text('whatsapp').notNull(),
   createdAt:     text('created_at').notNull().$defaultFn(() => new Date().toISOString()),
+  updatedAt:     text('updated_at').notNull().$defaultFn(() => new Date().toISOString()),
 });
 
 export type Profile    = typeof profiles.$inferSelect;

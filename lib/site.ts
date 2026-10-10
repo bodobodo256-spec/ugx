@@ -170,3 +170,18 @@ export function getBaseUrl(): string {
   }
   return 'https://ugandasexybabes.afrozex.com';
 }
+
+export function normalizeWhatsappNumber(phone: string): string {
+  if (!phone) return '';
+  let cleaned = phone.replace(/[^0-9]/g, '');
+  if (cleaned.startsWith('07') || cleaned.startsWith('03')) {
+    cleaned = '256' + cleaned.slice(1);
+  } else if (!cleaned.startsWith('256') && cleaned.length === 9) {
+    cleaned = '256' + cleaned;
+  }
+  return cleaned;
+}
+
+export function toCitySlug(cityName: string): string {
+  return cityName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}

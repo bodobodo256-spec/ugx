@@ -86,18 +86,28 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   };
 
   // ── Login Handler ──
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Only accept the single configured passkey (case-sensitive)
-    if (passkeyInput.trim() === 'Badman256') {
-      setIsAuthenticated(true);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('ug_admin_auth', 'true');
+    setAuthError('');
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passkey: passkeyInput.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsAuthenticated(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ug_admin_auth', 'true');
+          localStorage.setItem('ug_admin_key', passkeyInput.trim());
+        }
+        showToast('Welcome to Uganda Sexy Babes Admin Portal!');
+      } else {
+        setAuthError(data.error || 'Incorrect admin passkey. Please try again.');
       }
-      setAuthError('');
-      showToast('Welcome to Uganda Sexy Babes Admin Portal!');
-    } else {
-      setAuthError('Incorrect admin passkey. Please try again.');
+    } catch {
+      setAuthError('Connection error. Please try again.');
     }
   };
 

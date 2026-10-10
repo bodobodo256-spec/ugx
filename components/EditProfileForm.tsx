@@ -172,9 +172,10 @@ export default function EditProfileForm({ profile }: EditProfileFormProps) {
 
     startTransition(async () => {
       try {
-        // 1. Try dedicated REST API endpoint first (immune to Server Action hash changes)
+        const adminKey = typeof window !== 'undefined' ? (localStorage.getItem('ug_admin_key') || '') : '';
         const response = await fetch('/api/admin/profile', {
           method: 'POST',
+          headers: { 'x-admin-passkey': adminKey },
           body: formData,
         });
 

@@ -6,17 +6,23 @@ import { createProfile } from '@/app/actions/profiles';
 import { compressImage } from '@/lib/image-compress';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('Angel');
-  const [age, setAge] = useState(23);
+  const [name, setName] = useState('');
+  const [age, setAge] = useState(21);
   const [location, setLocation] = useState('Kololo, Kampala');
   const [category, setCategory] = useState('Adult Hookup');
-  const [phone, setPhone] = useState('+256700000001');
-  const [whatsapp, setWhatsapp] = useState('256700000001');
-  const [bio, setBio] = useState('I am a sweet, beautiful Ugandan lady available for private hookups, escort appointments and intimate companionship. Discreet and classy.');
+  const [phone, setPhone] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [bio, setBio] = useState('');
   const [tier, setTier] = useState<'Standard' | 'VIP'>('VIP');
   const [step, setStep] = useState<'package' | 'form'>('package');
   const [paymentRef, setPaymentRef] = useState('');
-  const [photoPreview, setPhotoPreview] = useState('https://spcdn.shortpixel.ai/spio/ret_img+q_cdnize+to_auto+s_webp:avif/ugandaescorts.net/wp-content/uploads/1790519050120/17905211817455-320x480.jpg');
+  const [photoPreview, setPhotoPreview] = useState('');
+  const [servicesList, setServicesList] = useState<string[]>([
+    'Private Hookups',
+    'Overnight Companionship',
+    'Relaxing Body Massage',
+    'Private Hotel Incall',
+  ]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +93,12 @@ export default function RegisterPage() {
     setVideoFiles(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const toggleService = (service: string) => {
+    setServicesList(prev =>
+      prev.includes(service) ? prev.filter(s => s !== service) : [...prev, service]
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -102,6 +114,8 @@ export default function RegisterPage() {
       formData.set('location',    location);
       formData.set('city',        cityPart);
       formData.set('tier',        tier);
+      formData.set('category',    category);
+      formData.set('services',    servicesList.join(', '));
       formData.set('phone',       phone);
       formData.set('whatsapp',    whatsapp);
       formData.set('about',       bio);

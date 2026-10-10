@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/navigation';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -87,7 +88,7 @@ export default function Header() {
         <nav className="header-navbar" aria-label="Main navigation">
           <ul className="primary-nav">
             <li className="has-dropdown">
-              <a href="/" className="nav-link active">Home</a>
+              <Link href="/" className={`nav-link ${pathname === '/' ? 'active' : ''}`}>Home</Link>
               <ul className="dropdown-menu">
                 <li className="dropdown-label">Browse Profiles</li>
                 <li><a href="/#vip-section"><span>⭐ VIP Babes</span></a></li>

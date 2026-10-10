@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { type Profile } from '@/db/schema';
 import ProfileCard from '@/components/ProfileCard';
+import { toCitySlug, normalizeWhatsappNumber } from '@/lib/site';
 
 interface ProfileDetailViewProps {
   profile: Profile;
@@ -70,7 +71,7 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
         <div className="detail-container">
           <Link href="/">Home</Link>
           <span className="sep">/</span>
-          <Link href={`/location/${encodeURIComponent(profile.city.toLowerCase())}`}>{profile.city}</Link>
+          <Link href={`/location/${toCitySlug(profile.city)}`}>{profile.city}</Link>
           <span className="sep">/</span>
           <span className="current">{profile.name}</span>
         </div>
@@ -167,7 +168,7 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
                 <div className="detail-actions-title">📞 Connect Directly (Discreet &amp; Instant)</div>
                 <div className="detail-buttons-grid">
                   <a
-                    href={`https://wa.me/${profile.whatsapp}?text=${waGreeting}`}
+                    href={`https://wa.me/${normalizeWhatsappNumber(profile.whatsapp)}?text=${waGreeting}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="detail-btn detail-btn-whatsapp"

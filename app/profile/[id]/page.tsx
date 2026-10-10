@@ -57,7 +57,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { id } = await params;
   const profile = await getProfileByIdOrSlug(id);
 
-  if (!profile) {
+  if (!profile || !profile.isApproved || profile.isArchived) {
     notFound();
   }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { type Profile } from '@/db/schema';
+import { normalizeWhatsappNumber } from '@/lib/site';
 
 interface ProfileCardProps {
   profile: Profile;
@@ -84,7 +85,7 @@ export default function ProfileCard({ profile, priority = false }: ProfileCardPr
 
           <a
             className="card-action action-whatsapp"
-            href={`https://wa.me/${profile.whatsapp}`}
+            href={`https://wa.me/${normalizeWhatsappNumber(profile.whatsapp)}`}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`WhatsApp ${profile.name}`}

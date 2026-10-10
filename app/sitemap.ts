@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getBaseUrl } from '@/lib/site';
 import { LOCATIONS } from '@/data/locations';
+import { getProfiles } from '@/app/actions/profiles';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseUrl();
@@ -36,5 +37,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  return [...staticRoutes, ...locationRoutes];
+  // Fetch approved profile pages for indexing
+  let profileRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const approvedProfiles = await getProfiles();
+    profileRoutes = approvedProfiles.map((p) => ({
+      url: `${baseUrl}/profile/${p.slug || p.id}`,
+      lastModified: p.createdAt ? new Date(p.createdAt) : now,
+      changeFrequency: 'daily',
+      priority: p.tier.startsWith('VIP') ? 0.9 : 0.8,
+    }));
+  } catch (err) {
+    console.warn('[sitemap] Failed to fetch profiles:', err);
+  }
+
+  return [...staticRoutes, ...locationRoutes, ...profileRoutes];
 }

@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   publisher: 'Uganda Sexy Babes',
   applicationName: 'Uganda Sexy Babes',
   alternates: {
-    canonical: './',
+    canonical: baseUrl,
   },
   robots: {
     index: true,
