@@ -4,6 +4,9 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getBaseUrl, SITE_CONFIG } from '@/lib/site';
+import { PHProvider } from './providers';
+import PostHogPageView from './PostHogPageView';
+import { Suspense } from 'react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -149,9 +152,14 @@ export default function RootLayout({
         />
       </head>
       <body className="home dark-theme">
-        <Header />
-        {children}
-        <Footer />
+        <PHProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          <Header />
+          {children}
+          <Footer />
+        </PHProvider>
       </body>
     </html>
   );
