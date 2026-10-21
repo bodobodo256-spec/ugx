@@ -94,21 +94,21 @@ export default function RootLayout({
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${baseUrl}/#website`,
     name: 'Uganda Sexy Babes',
     alternateName: [
-      'Uganda Sexy Babes',
       'UgandaBabes',
       'Sexy Babes Uganda',
       'Uganda Babes',
-      'ugandasexybabes.afrozex.com',
     ],
     url: baseUrl,
-    image: `${baseUrl}/logo.png`,
-    publisher: {
-      '@type': 'Organization',
-      name: 'Uganda Sexy Babes',
-      logo: `${baseUrl}/logo.png`,
+    image: {
+      '@type': 'ImageObject',
+      url: `${baseUrl}/logo.png`,
+      width: 512,
+      height: 512,
     },
+    publisher: { '@id': `${baseUrl}/#organization` },
     potentialAction: {
       '@type': 'SearchAction',
       target: `${baseUrl}/?search={search_term_string}`,
@@ -119,16 +119,41 @@ export default function RootLayout({
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${baseUrl}/#organization`,
     name: 'Uganda Sexy Babes',
+    legalName: 'Uganda Sexy Babes',
     url: baseUrl,
     logo: {
+      '@type': 'ImageObject',
+      '@id': `${baseUrl}/#logo`,
+      url: `${baseUrl}/logo.png`,
+      contentUrl: `${baseUrl}/logo.png`,
+      width: 512,
+      height: 512,
+      caption: 'Uganda Sexy Babes',
+    },
+    image: {
       '@type': 'ImageObject',
       url: `${baseUrl}/logo.png`,
       width: 512,
       height: 512,
     },
-    image: `${baseUrl}/logo.png`,
     description: 'Uganda\'s #1 adult hookup, companionship, Uganda babes and escort directory across Uganda.',
+    sameAs: [
+      baseUrl,
+      'https://ugandasexybabes.afrozex.com',
+    ],
+  };
+
+  const webPageSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${baseUrl}/#webpage`,
+    url: baseUrl,
+    name: 'Uganda Sexy Babes — #1 Uganda Babes, Escorts & Hookups Directory',
+    isPartOf: { '@id': `${baseUrl}/#website` },
+    about: { '@id': `${baseUrl}/#organization` },
+    publisher: { '@id': `${baseUrl}/#organization` },
   };
 
   return (
@@ -149,6 +174,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
         />
       </head>
       <body className="home dark-theme">
