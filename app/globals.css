@@ -1973,3 +1973,20 @@ button { cursor: pointer; font-family: var(--font); }
   color: #FFD600;
 }
 
+
+/* Secret Admin Portal Link (Discreet & Invisible) */
+.secret-admin-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.04);
+  text-decoration: none;
+  cursor: default;
+  transition: all 0.25s ease;
+}
+.secret-admin-dot:hover {
+  background-color: #FFD600 !important;
+  box-shadow: 0 0 8px #FFD600;
+  transform: scale(1.4);
+}

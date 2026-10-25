@@ -32,7 +32,7 @@ export default function Footer() {
               <ul>
                 <li><Link href="/#vip-section">VIP Babes</Link></li>
                 <li><Link href="/#all-section">All Babes</Link></li>
-                <li><Link href="/register" style={{ color: '#FFD600', fontWeight: 600 }}>✨ Create Profile</Link></li>
+                <li><Link href="/register">Register</Link></li>
               </ul>
             </div>
             <div className="footer-col">
@@ -57,13 +57,14 @@ export default function Footer() {
               <ul>
                 <li><Link href="/register">Register</Link></li>
                 <li><Link href="/register">Login</Link></li>
-                <li><Link href="/admin" style={{ color: '#FFD600' }}>Admin Portal 🔒</Link></li>
               </ul>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          <p className="footer-copy">&copy; {new Date().getFullYear()} Uganda Sexy Babes. All rights reserved.</p>
+          <p className="footer-copy">
+            &copy; {new Date().getFullYear()} Uganda Sexy Babes. All rights reserved<Link href="/admin" style={{ color: 'inherit', textDecoration: 'none', cursor: 'default' }} title="">.</Link>
+          </p>
           <div className="footer-legal">
             <Link href="/">Privacy Policy</Link>
             <Link href="/">Terms of Use</Link>
@@ -72,6 +73,15 @@ export default function Footer() {
           <p className="footer-disclaimer">
             This site is strictly for adults (18+) only. All listed models and companions have independently confirmed their age and consented to their profiles being published.
           </p>
+          {/* Secret invisible dot at extreme bottom of page */}
+          <div style={{ textAlign: 'center', marginTop: '0.75rem', lineHeight: 1 }}>
+            <Link
+              href="/admin"
+              className="secret-admin-dot"
+              aria-label="Admin Access"
+              title=""
+            />
+          </div>
         </div>
       </div>
     </footer>

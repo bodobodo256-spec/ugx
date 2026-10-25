@@ -70,11 +70,11 @@ export default function Header() {
           </div>
 
           <div className="header-actions">
-            <Link className="btn-register" href="/register" title="Create your babe profile">
+            <Link className="btn-register" href="/register" title="Register">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
               </svg>
-              ✨ Create Profile
+              Register
             </Link>
             <Link className="btn-login" href="/register">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -93,12 +93,10 @@ export default function Header() {
                 <li className="dropdown-label">Browse Profiles</li>
                 <li><Link href="/#vip-section"><span>⭐ VIP Babes</span></Link></li>
                 <li><Link href="/#all-section"><span>👩 All Babes</span></Link></li>
-                <li><Link href="/register"><span>✨ Create Profile</span></Link></li>
               </ul>
             </li>
             <li><Link href="/#vip-section" className="nav-link">VIP Babes</Link></li>
             <li><Link href="/#all-section" className="nav-link">All Babes</Link></li>
-            <li><Link href="/register" className="nav-link" style={{ color: '#FFD600', fontWeight: 700 }}>✨ Create Profile</Link></li>
             <li><Link href="/#about" className="nav-link">About</Link></li>
             <li><Link href="/#locations" className="nav-link">Locations</Link></li>
           </ul>
@@ -132,8 +130,8 @@ export default function Header() {
             </Link>
           </div>
           <div className="mobile-top-actions">
-            <Link href="/register" className="btn-register" style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem', gap: '0.3rem', borderRadius: '8px' }} aria-label="Create Profile">
-              + Create
+            <Link href="/register" className="btn-register" style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem', gap: '0.3rem', borderRadius: '8px' }} aria-label="Register">
+              Register
             </Link>
           </div>
         </div>
@@ -160,7 +158,6 @@ export default function Header() {
             <li><Link href="/">Home</Link></li>
             <li><Link href="/#vip-section">VIP</Link></li>
             <li><Link href="/#all-section">Babes</Link></li>
-            <li><Link href="/register" style={{ color: '#FFD600', fontWeight: 700 }}>✨ Create Profile</Link></li>
           </ul>
         </nav>
 
@@ -193,9 +190,8 @@ export default function Header() {
               <li><Link href="/#all-section" onClick={() => setIsDrawerOpen(false)}><span className="dot dot-female"></span>💋 All Babes</Link></li>
               <li className="drawer-section-label">Main Menu</li>
               <li><Link href="/" onClick={() => setIsDrawerOpen(false)}>🏠 Home</Link></li>
-              <li><Link href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-cta">✨ Create Profile</Link></li>
+              <li><Link href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-cta">Register</Link></li>
               <li><Link href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-login">Login</Link></li>
-              <li><Link href="/admin" onClick={() => setIsDrawerOpen(false)} style={{ color: '#FFD600', fontWeight: 600 }}>🔒 Admin Portal</Link></li>
             </ul>
           </div>
         </div>

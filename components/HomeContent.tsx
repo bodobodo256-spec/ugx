@@ -105,27 +105,6 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
               <h2 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--gray-4, #b0b0b0)', textAlign: 'center', marginTop: '0.5rem', marginBottom: '0.75rem', letterSpacing: '0.02em' }}>
                 Uganda&apos;s #1 Directory for <strong style={{ color: '#FFD600' }}>Uganda Babes</strong>, <strong style={{ color: '#FF2E55' }}>Sexy Babes Uganda</strong> &amp; <strong style={{ color: '#FFF' }}>Kampala Escorts</strong>
               </h2>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.25rem' }}>
-                <Link
-                  href="/register"
-                  className="btn-primary"
-                  style={{
-                    background: 'var(--yellow)',
-                    color: '#000',
-                    fontWeight: 800,
-                    fontSize: '0.88rem',
-                    padding: '0.5rem 1.25rem',
-                    borderRadius: '25px',
-                    boxShadow: '0 4px 15px rgba(255, 214, 0, 0.3)',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                  }}
-                >
-                  ✨ Create Profile / Register as a Babe →
-                </Link>
-              </div>
             </section>
 
             {/* ══ LAYOUT: SIDEBAR + CARDS AREA ══ */}
@@ -192,26 +171,57 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
                     </ul>
                   )}
                 </div>
-                <div className="sidebar-cta-box" style={{ marginTop: '1rem' }}>
-                    <div className="sidebar-cta-title">Are you a Babe?</div>
-                    <div className="sidebar-cta-text">Join Uganda&apos;s #1 escort &amp; hookups directory. Get verified &amp; receive direct WhatsApp calls.</div>
-                    <Link
-                      href="/register"
-                      className="btn-primary sidebar-cta-btn"
-                      style={{
-                        background: 'var(--yellow)',
-                        color: '#000',
-                        fontWeight: 700,
-                        borderRadius: '8px',
-                        textDecoration: 'none',
-                        textAlign: 'center',
-                        display: 'block',
-                      }}
-                    >
-                      ✨ Create Profile
-                    </Link>
+                {/* ══ TELEGRAM CHANNEL BUTTON ══ */}
+                <div
+                  className="sidebar-telegram-box"
+                  style={{
+                    marginTop: '1.25rem',
+                    background: 'linear-gradient(145deg, rgba(34, 158, 217, 0.12) 0%, rgba(13, 20, 36, 0.9) 100%)',
+                    border: '1px solid rgba(34, 158, 217, 0.35)',
+                    borderRadius: '12px',
+                    padding: '1.1rem',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#229ED9" aria-hidden="true">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.17 3.35-1.37 3.73-1.38.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+                    </svg>
+                    <strong style={{ color: '#FFF', fontSize: '0.92rem', letterSpacing: '0.02em' }}>Join Telegram Channel</strong>
                   </div>
-                </aside>
+                  <p style={{ color: 'var(--gray-4, #a0aec0)', fontSize: '0.78rem', margin: '0 0 0.85rem', lineHeight: 1.4 }}>
+                    Get real-time updates, hot new babes &amp; direct hookup announcements.
+                  </p>
+                  <a
+                    href={process.env.NEXT_PUBLIC_TELEGRAM_URL || 'https://t.me/ugandasexybabes'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-telegram-sidebar"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.45rem',
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #2AABEE 0%, #229ED9 100%)',
+                      color: '#FFF',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      padding: '0.65rem 1rem',
+                      borderRadius: '8px',
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 14px rgba(34, 158, 217, 0.4)',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.77-1.17 3.35-1.37 3.73-1.38.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+                    </svg>
+                    Join on Telegram →
+                  </a>
+                </div>
+              </aside>
 
               {/* ══ PROFILES AREA ══ */}
               <div className="profiles-area">
@@ -316,6 +326,15 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
 
             {/* ══ SEO GUIDE & FAQ SECTION ══ */}
             <SEOContent />
+            {/* ══ SECRET ADMIN ACCESS (EXTREME BOTTOM OF HOMEPAGE) ══ */}
+            <div style={{ textAlign: 'center', padding: '1.5rem 0 0.5rem', lineHeight: 1 }}>
+              <Link
+                href="/admin"
+                className="secret-admin-dot"
+                aria-label="Admin Access"
+                title=""
+              />
+            </div>
 
           </div>{/* .body-box */}
         </main>
