@@ -1,6 +1,6 @@
 'use server';
 
-import { getDb } from '@/db/index';
+import { getDb, ensureD1Schema } from '@/db/index';
 import { profiles, type Profile, type NewProfile } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -147,6 +147,9 @@ export async function createProfile(formData: FormData): Promise<
     const picsCount = (photoUrl ? 1 : 0) + galleryList.length;
     const vidsCount = videoList.length;
 
+    // Verify and auto-fix schema if missing columns
+    try { await ensureD1Schema(); } catch (migErr) { console.warn("[createProfile] schema warning:", migErr); }
+
     const db = getDb();
 
     await db.insert(profiles).values({
@@ -199,10 +202,11 @@ export async function createProfile(formData: FormData): Promise<
 
 export async function getProfiles(): Promise<Profile[]> {
   try {
+    try { await ensureD1Schema(); } catch {}
     const db = getDb();
     const all = await db.select().from(profiles).orderBy(desc(profiles.createdAt));
-    // Only return profiles that are explicitly approved and not archived
-    return all.filter((p) => p.isApproved === true && !p.isArchived);
+    // Show approved profiles (plus legacy ones where is_approved is null/undefined) and not archived
+    return all.filter((p) => p.isApproved !== false && !p.isArchived);
   } catch (err) {
     console.error('[getProfiles]', err);
     return [];
@@ -213,6 +217,7 @@ export async function getProfiles(): Promise<Profile[]> {
 
 export async function getAdminProfiles(): Promise<Profile[]> {
   try {
+    try { await ensureD1Schema(); } catch {}
     const db = getDb();
     return await db.select().from(profiles).orderBy(desc(profiles.createdAt));
   } catch (err) {
