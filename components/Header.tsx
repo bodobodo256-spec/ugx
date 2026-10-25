@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const pathname = usePathname();
@@ -38,7 +38,7 @@ export default function Header() {
       >
         <div className="header-topbar">
           <div className="header-logo">
-            <a href="/" title="Uganda Sexy Babes" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+            <Link href="/" title="Uganda Sexy Babes" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
               <Image src="/logo.png" alt="Uganda Sexy Babes Logo" width={38} height={38} style={{ borderRadius: '50%', flexShrink: 0 }} />
               <div className="logo-text">
                 <span className="logo-ug">Uganda</span>
@@ -47,7 +47,7 @@ export default function Header() {
                   <span style={{ color: '#FFD600' }}>Babes</span>
                 </span>
               </div>
-            </a>
+            </Link>
           </div>
 
           <div className="header-search-wrap">
@@ -70,18 +70,18 @@ export default function Header() {
           </div>
 
           <div className="header-actions">
-            <a className="btn-register" href="/register">
+            <Link className="btn-register" href="/register" title="Create your babe profile">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
               </svg>
-              Register
-            </a>
-            <a className="btn-login" href="/register">
+              ✨ Create Profile
+            </Link>
+            <Link className="btn-login" href="/register">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
               </svg>
               Login
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -91,16 +91,16 @@ export default function Header() {
               <Link href="/" className={`nav-link ${pathname === '/' ? 'active' : ''}`}>Home</Link>
               <ul className="dropdown-menu">
                 <li className="dropdown-label">Browse Profiles</li>
-                <li><a href="/#vip-section"><span>⭐ VIP Babes</span></a></li>
-                <li><a href="/#all-section"><span>👩 All Babes</span></a></li>
-                <li><a href="/register"><span>✨ Create Profile</span></a></li>
+                <li><Link href="/#vip-section"><span>⭐ VIP Babes</span></Link></li>
+                <li><Link href="/#all-section"><span>👩 All Babes</span></Link></li>
+                <li><Link href="/register"><span>✨ Create Profile</span></Link></li>
               </ul>
             </li>
-            <li><a href="/#vip-section" className="nav-link">VIP Babes</a></li>
-            <li><a href="/#all-section" className="nav-link">All Babes</a></li>
-            <li><a href="/register" className="nav-link">Register Profile</a></li>
-            <li><a href="/#about" className="nav-link">About</a></li>
-            <li><a href="/#locations" className="nav-link">Locations</a></li>
+            <li><Link href="/#vip-section" className="nav-link">VIP Babes</Link></li>
+            <li><Link href="/#all-section" className="nav-link">All Babes</Link></li>
+            <li><Link href="/register" className="nav-link" style={{ color: '#FFD600', fontWeight: 700 }}>✨ Create Profile</Link></li>
+            <li><Link href="/#about" className="nav-link">About</Link></li>
+            <li><Link href="/#locations" className="nav-link">Locations</Link></li>
           </ul>
         </nav>
       </header>
@@ -120,7 +120,7 @@ export default function Header() {
             </svg>
           </button>
           <div className="mobile-logo">
-            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
               <Image src="/logo.png" alt="Uganda Sexy Babes Logo" width={30} height={30} style={{ borderRadius: '50%', flexShrink: 0 }} />
               <div className="logo-text">
                 <span className="logo-ug">Uganda</span>
@@ -129,14 +129,12 @@ export default function Header() {
                   <span style={{ color: '#FFD600' }}>Babes</span>
                 </span>
               </div>
-            </a>
+            </Link>
           </div>
           <div className="mobile-top-actions">
-            <a href="/register" className="mobile-icon-btn" aria-label="Register">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-              </svg>
-            </a>
+            <Link href="/register" className="btn-register" style={{ padding: '0.4rem 0.8rem', fontSize: '0.78rem', gap: '0.3rem', borderRadius: '8px' }} aria-label="Create Profile">
+              + Create
+            </Link>
           </div>
         </div>
 
@@ -159,10 +157,10 @@ export default function Header() {
 
         <nav className="mobile-quick-links" aria-label="Quick links">
           <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/#vip-section">VIP</a></li>
-            <li><a href="/#all-section">Babes</a></li>
-            <li><a href="/register">Register</a></li>
+            <li><Link href="/">Home</Link></li>
+            <li><Link href="/#vip-section">VIP</Link></li>
+            <li><Link href="/#all-section">Babes</Link></li>
+            <li><Link href="/register" style={{ color: '#FFD600', fontWeight: 700 }}>✨ Create Profile</Link></li>
           </ul>
         </nav>
 
@@ -191,13 +189,13 @@ export default function Header() {
             </div>
             <ul className="mobile-drawer-links">
               <li className="drawer-section-label">Browse Profiles</li>
-              <li><a href="/#vip-section" onClick={() => setIsDrawerOpen(false)}><span className="dot dot-vip"></span>⭐ VIP Babes</a></li>
-              <li><a href="/#all-section" onClick={() => setIsDrawerOpen(false)}><span className="dot dot-female"></span>💋 All Babes</a></li>
+              <li><Link href="/#vip-section" onClick={() => setIsDrawerOpen(false)}><span className="dot dot-vip"></span>⭐ VIP Babes</Link></li>
+              <li><Link href="/#all-section" onClick={() => setIsDrawerOpen(false)}><span className="dot dot-female"></span>💋 All Babes</Link></li>
               <li className="drawer-section-label">Main Menu</li>
-              <li><a href="/" onClick={() => setIsDrawerOpen(false)}>🏠 Home</a></li>
-              <li><a href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-cta">✨ Create Profile</a></li>
-              <li><a href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-login">Login</a></li>
-              <li><a href="/admin" onClick={() => setIsDrawerOpen(false)} style={{ color: '#FFD600', fontWeight: 600 }}>🔒 Admin Portal</a></li>
+              <li><Link href="/" onClick={() => setIsDrawerOpen(false)}>🏠 Home</Link></li>
+              <li><Link href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-cta">✨ Create Profile</Link></li>
+              <li><Link href="/register" onClick={() => setIsDrawerOpen(false)} className="drawer-login">Login</Link></li>
+              <li><Link href="/admin" onClick={() => setIsDrawerOpen(false)} style={{ color: '#FFD600', fontWeight: 600 }}>🔒 Admin Portal</Link></li>
             </ul>
           </div>
         </div>

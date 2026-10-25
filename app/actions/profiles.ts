@@ -5,7 +5,7 @@ import { profiles, type Profile, type NewProfile } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function toSlug(name: string) {
   return (
@@ -71,7 +71,7 @@ export async function uploadMedia(file: File, folder: string): Promise<string | 
 }
 
 
-// ─── Public: createProfile (from registration page) ──────────────────────────
+// â”€â”€â”€ Public: createProfile (from registration page) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function createProfile(formData: FormData): Promise<
   { success: true; slug: string } | { success: false; error: string }
@@ -187,11 +187,15 @@ export async function createProfile(formData: FormData): Promise<
 
   } catch (err) {
     console.error('[createProfile]', err);
-    return { success: false, error: 'Something went wrong. Please try again.' };
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('401') || msg.includes('Unauthorized')) {
+      return { success: false, error: 'Server configuration error (DB token missing). Please contact admin.' };
+    }
+    return { success: false, error: msg || 'Something went wrong. Please try again.' };
   }
 }
 
-// ─── Public: getProfiles (active & approved only) ──────────────────────────────
+// â”€â”€â”€ Public: getProfiles (active & approved only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getProfiles(): Promise<Profile[]> {
   try {
@@ -205,7 +209,7 @@ export async function getProfiles(): Promise<Profile[]> {
   }
 }
 
-// ─── Admin: getAdminProfiles (all profiles) ───────────────────────────────────
+// â”€â”€â”€ Admin: getAdminProfiles (all profiles) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getAdminProfiles(): Promise<Profile[]> {
   try {
@@ -217,7 +221,7 @@ export async function getAdminProfiles(): Promise<Profile[]> {
   }
 }
 
-// ─── Admin: getProfileById ───────────────────────────────────────────────────
+// â”€â”€â”€ Admin: getProfileById â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function getProfileById(id: number): Promise<Profile | null> {
   try {
@@ -250,7 +254,7 @@ export async function getProfileByIdOrSlug(idOrSlug: string | number): Promise<P
   return getProfileBySlug(String(idOrSlug).trim());
 }
 
-// ─── Admin: Toggle Actions ───────────────────────────────────────────────────
+// â”€â”€â”€ Admin: Toggle Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function toggleProfileApproval(id: number, isApproved: boolean) {
   try {
@@ -360,7 +364,7 @@ export async function updatePaymentStatus(
   }
 }
 
-// ─── Admin: Create Profile directly ──────────────────────────────────────────
+// â”€â”€â”€ Admin: Create Profile directly â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function adminCreateProfile(formData: FormData): Promise<
   { success: true; profileId: number } | { success: false; error: string }
@@ -481,7 +485,7 @@ export async function adminCreateProfile(formData: FormData): Promise<
   }
 }
 
-// ─── Admin: Update Full Profile ──────────────────────────────────────────────
+// â”€â”€â”€ Admin: Update Full Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function adminUpdateProfile(
   idOrFormData: number | string | FormData,
@@ -636,7 +640,7 @@ export async function adminUpdateProfile(
   }
 }
 
-// ─── Admin: Delete Profile ───────────────────────────────────────────────────
+// â”€â”€â”€ Admin: Delete Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function deleteProfile(id: number): Promise<{ success: boolean; error?: string }> {
   try {
@@ -656,7 +660,7 @@ export async function deleteProfile(id: number): Promise<{ success: boolean; err
   }
 }
 
-// ─── Admin: Refresh — fetch fresh profile list ────────────────────────────────
+// â”€â”€â”€ Admin: Refresh â€” fetch fresh profile list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function fetchAdminProfiles(): Promise<Profile[]> {
   return getAdminProfiles();

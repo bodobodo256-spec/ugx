@@ -64,6 +64,12 @@ export function getDb(): any {
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${dbId}/query`;
 
   return drizzleProxy(async (sql, params, method) => {
+    if (!apiToken) {
+      throw new Error(
+        'Cloudflare D1 connection error: CLOUDFLARE_API_TOKEN is not set in Vercel environment variables.'
+      );
+    }
+
     const res = await fetch(url, {
       method:  'POST',
       headers: {
@@ -74,6 +80,11 @@ export function getDb(): any {
     });
 
     if (!res.ok) {
+      if (res.status === 401) {
+        throw new Error(
+          'Cloudflare D1 connection error: 401 Unauthorized. The CLOUDFLARE_API_TOKEN in Vercel is invalid or expired.'
+        );
+      }
       throw new Error(`D1 REST API error: ${res.status} ${res.statusText}`);
     }
 

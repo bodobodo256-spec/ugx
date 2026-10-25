@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import ProfileCard from '@/components/ProfileCard';
 import SEOContent from '@/components/SEOContent';
 import { LOCATIONS } from '@/data/locations';
@@ -95,15 +96,36 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
           <div className="body-box">
 
             {/* ══ HERO SECTION ══ */}
-            <section className="profiles-hero profiles-hero--compact" aria-labelledby="hero-title">
+            <section className="profiles-hero profiles-hero--compact" aria-labelledby="hero-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <h1 className="hero-title hero-title--uganda" id="hero-title">
                 <span className="brand-word brand-uganda">Uganda</span>
                 <span className="brand-word brand-sexy">Sexy</span>
                 <span className="brand-word brand-babes">Babes</span>
               </h1>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--gray-4, #b0b0b0)', textAlign: 'center', marginTop: '0.5rem', marginBottom: '1rem', letterSpacing: '0.02em' }}>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--gray-4, #b0b0b0)', textAlign: 'center', marginTop: '0.5rem', marginBottom: '0.75rem', letterSpacing: '0.02em' }}>
                 Uganda&apos;s #1 Directory for <strong style={{ color: '#FFD600' }}>Uganda Babes</strong>, <strong style={{ color: '#FF2E55' }}>Sexy Babes Uganda</strong> &amp; <strong style={{ color: '#FFF' }}>Kampala Escorts</strong>
               </h2>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.25rem' }}>
+                <Link
+                  href="/register"
+                  className="btn-primary"
+                  style={{
+                    background: 'var(--yellow)',
+                    color: '#000',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '25px',
+                    boxShadow: '0 4px 15px rgba(255, 214, 0, 0.3)',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  ✨ Create Profile / Register as a Babe →
+                </Link>
+              </div>
             </section>
 
             {/* ══ LAYOUT: SIDEBAR + CARDS AREA ══ */}
@@ -170,7 +192,26 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
                     </ul>
                   )}
                 </div>
-              </aside>
+                <div className="sidebar-cta-box" style={{ marginTop: '1rem' }}>
+                    <div className="sidebar-cta-title">Are you a Babe?</div>
+                    <div className="sidebar-cta-text">Join Uganda&apos;s #1 escort &amp; hookups directory. Get verified &amp; receive direct WhatsApp calls.</div>
+                    <Link
+                      href="/register"
+                      className="btn-primary sidebar-cta-btn"
+                      style={{
+                        background: 'var(--yellow)',
+                        color: '#000',
+                        fontWeight: 700,
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        textAlign: 'center',
+                        display: 'block',
+                      }}
+                    >
+                      ✨ Create Profile
+                    </Link>
+                  </div>
+                </aside>
 
               {/* ══ PROFILES AREA ══ */}
               <div className="profiles-area">

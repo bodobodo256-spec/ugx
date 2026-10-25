@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Footer() {
   return (
@@ -29,34 +30,34 @@ export default function Footer() {
             <div className="footer-col">
               <h4>Browse</h4>
               <ul>
-                <li><a href="/#vip-section">VIP Babes</a></li>
-                <li><a href="/#all-section">All Babes</a></li>
-                <li><a href="/register">Create Profile</a></li>
+                <li><Link href="/#vip-section">VIP Babes</Link></li>
+                <li><Link href="/#all-section">All Babes</Link></li>
+                <li><Link href="/register" style={{ color: '#FFD600', fontWeight: 600 }}>✨ Create Profile</Link></li>
               </ul>
             </div>
             <div className="footer-col">
               <h4>Top Cities</h4>
               <ul>
-                <li><a href="/location/kampala">Kampala</a></li>
-                <li><a href="/location/entebbe">Entebbe</a></li>
-                <li><a href="/location/jinja">Jinja</a></li>
-                <li><a href="/location/mbarara">Mbarara</a></li>
+                <li><Link href="/location/kampala">Kampala</Link></li>
+                <li><Link href="/location/entebbe">Entebbe</Link></li>
+                <li><Link href="/location/jinja">Jinja</Link></li>
+                <li><Link href="/location/mbarara">Mbarara</Link></li>
               </ul>
             </div>
             <div className="footer-col">
               <h4>About</h4>
               <ul>
-                <li><a href="/#about">About Us</a></li>
-                <li><a href="/register">Join Platform</a></li>
-                <li><a href="/register">VIP Membership</a></li>
+                <li><Link href="/#about">About Us</Link></li>
+                <li><Link href="/register">Join Platform</Link></li>
+                <li><Link href="/register">VIP Membership</Link></li>
               </ul>
             </div>
             <div className="footer-col">
               <h4>Account</h4>
               <ul>
-                <li><a href="/register">Register</a></li>
-                <li><a href="/register">Login</a></li>
-                <li><a href="/admin" style={{ color: '#FFD600' }}>Admin Portal 🔒</a></li>
+                <li><Link href="/register">Register</Link></li>
+                <li><Link href="/register">Login</Link></li>
+                <li><Link href="/admin" style={{ color: '#FFD600' }}>Admin Portal 🔒</Link></li>
               </ul>
             </div>
           </div>
@@ -64,9 +65,9 @@ export default function Footer() {
         <div className="footer-bottom">
           <p className="footer-copy">&copy; {new Date().getFullYear()} Uganda Sexy Babes. All rights reserved.</p>
           <div className="footer-legal">
-            <a href="/">Privacy Policy</a>
-            <a href="/">Terms of Use</a>
-            <a href="/">Disclaimer</a>
+            <Link href="/">Privacy Policy</Link>
+            <Link href="/">Terms of Use</Link>
+            <Link href="/">Disclaimer</Link>
           </div>
           <p className="footer-disclaimer">
             This site is strictly for adults (18+) only. All listed models and companions have independently confirmed their age and consented to their profiles being published.
