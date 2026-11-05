@@ -89,7 +89,10 @@ export const metadata: Metadata = {
     ],
   },
   verification: {
-    google: 'DnvygG6G-4p43JBIRk4YBzoUjvi5QfxkZjPaDSV_LO8',
+    google: [
+      'lOnsBTJ9zIpgxh4z4asb_qE-DfAOkGDjiFXu0aPgMAM',
+      'DnvygG6G-4p43JBIRk4YBzoUjvi5QfxkZjPaDSV_LO8',
+    ],
   },
 };
 
@@ -133,6 +136,10 @@ export default function RootLayout({
   return (
     <html lang="en-US" className={inter.className}>
       <head>
+        <meta
+          name="google-site-verification"
+          content="lOnsBTJ9zIpgxh4z4asb_qE-DfAOkGDjiFXu0aPgMAM"
+        />
         <meta
           name="google-site-verification"
           content="DnvygG6G-4p43JBIRk4YBzoUjvi5QfxkZjPaDSV_LO8"
