@@ -171,7 +171,7 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
                     </ul>
                   )}
                 </div>
-                {/* ══ TELEGRAM CHANNEL BUTTON ══ */}
+                {/* ══ TELEGRAM CHANNEL BUTTON ══ — hidden on mobile, visible on desktop sidebar only */}
                 <div
                   className="sidebar-telegram-box"
                   style={{
