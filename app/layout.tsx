@@ -102,16 +102,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   // 1. Google Search Central official WebSite structured data (Site Name signal)
+  // IMPORTANT: Do NOT put the subdomain URL in alternateName — Google will use it as the name fallback.
   const websiteStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Uganda Sexy Babes',
-    alternateName: [
-      'UgandaSexyBabes',
-      'Uganda Babes',
-      'Sexy Babes Uganda',
-      'ugandasexybabes.afrozex.com',
-    ],
+    alternateName: 'Uganda Sexy Babes',
     url: `${baseUrl}/`,
     potentialAction: {
       '@type': 'SearchAction',
