@@ -18,6 +18,8 @@ import {
   fetchAdminProfiles,
 } from '@/app/actions/profiles';
 import '@/app/admin/admin.css';
+import '@/app/admin/edit.css';
+import CreateProfileForm from '@/components/CreateProfileForm';
 
 interface AdminDashboardProps {
   initialProfiles: Profile[];
@@ -455,13 +457,12 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
             >
               🔄 Refresh DB
             </button>
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
+            <Link
+              href="/admin/create"
               className="admin-btn admin-btn-primary"
             >
               ➕ Add New Profile
-            </button>
+            </Link>
             <button
               type="button"
               onClick={handleLogout}
@@ -1066,171 +1067,31 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
           </div>
         )}
 
-        {/* ══ MODAL 1: ADD NEW PROFILE ══ */}
+        {/* ══ MODAL 1: ADD NEW PROFILE (EXACT EDIT PROFILE DESIGN) ══ */}
         {isAddModalOpen && (
           <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h3 className="modal-title">
-                  <span>➕ Add New Profile</span>
-                </h3>
-                <button
-                  type="button"
-                  className="modal-close"
-                  onClick={() => setIsAddModalOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form onSubmit={handleAddSubmit}>
-                <div className="admin-form-grid">
-                  <div className="admin-field">
-                    <label className="admin-label">Model Name / Alias *</label>
-                    <input type="text" name="name" className="admin-input" placeholder="e.g. Shakira, Natasha" required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Age (18+) *</label>
-                    <input type="number" name="age" min="18" max="65" defaultValue="22" className="admin-input" required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">City *</label>
-                    <select name="city" className="admin-modal-select" required defaultValue="Kampala">
-                      {LOCATIONS.map((l) => (
-                        <option key={l.slug} value={l.name}>{l.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Specific Area / Location *</label>
-                    <input type="text" name="location" className="admin-input" defaultValue="Kololo, Kampala" placeholder="e.g. Kololo, Kampala" required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Tier / Subscription Plan *</label>
-                    <select name="tier" className="admin-modal-select" defaultValue="VIP">
-                      <option value="Standard">Standard (10,000shs / week)</option>
-                      <option value="VIP">VIP (25,000shs / week)</option>
-                      <option value="Premium">Premium VIP</option>
-                      <option value="VIP Spa">VIP Spa &amp; Massage</option>
-                    </select>
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Phone (Direct Calls) *</label>
-                    <input type="tel" name="phone" className="admin-input" placeholder="+256 700 000 000" defaultValue="+256" required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">WhatsApp Number *</label>
-                    <input type="tel" name="whatsapp" className="admin-input" placeholder="256700000000" defaultValue="256" required />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Pics Count</label>
-                    <input type="number" name="picsCount" className="admin-input" defaultValue="6" />
-                  </div>
-                </div>
-
-                <div className="admin-field" style={{ marginBottom: '1.25rem' }}>
-                  <label className="admin-label">Bio / Profile Description</label>
-                  <textarea
-                    name="about"
-                    className="admin-textarea"
-                    rows={3}
-                    placeholder="Enter model description, services, personal introduction..."
-                    defaultValue="Sweet, friendly and discreet escort. Available for private hookups and intimate companionship."
-                  />
-                </div>
-
-                <div className="admin-form-grid" style={{ marginBottom: '1rem' }}>
-                  <div className="admin-field">
-                    <label className="admin-label">Upload Photo (Cloudflare R2)</label>
-                    <input type="file" name="photo" ref={addPhotoInputRef} accept="image/*" className="admin-input" />
-                  </div>
-
-                  <div className="admin-field">
-                    <label className="admin-label">Or Direct Photo URL</label>
-                    <input type="url" name="photoUrl" className="admin-input" placeholder="https://..." />
-                  </div>
-                </div>
-
-                {/* Flags row */}
-                <div className="admin-checkbox-row">
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isApproved" value="true" defaultChecked />
-                    <span>Approve Immediately</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isVip" value="true" defaultChecked />
-                    <span>Make VIP ⭐</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isPremium" value="true" />
-                    <span>Make Premium 💎</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isNew" value="true" defaultChecked />
-                    <span>Mark New 🆕</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isVerified" value="true" defaultChecked />
-                    <span>Verified Badge 🛡️</span>
-                  </label>
-
-                  <label className="checkbox-label">
-                    <input type="checkbox" name="isArchived" value="true" />
-                    <span>Archive 📦</span>
-                  </label>
-                </div>
-
-                {/* Payment setup */}
-                <div style={{ background: '#191919', padding: '1rem', borderRadius: '8px', border: '1px solid #333', marginBottom: '1.25rem' }}>
-                  <div style={{ color: '#FFD600', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.6rem', textTransform: 'uppercase' }}>
-                    💳 Weekly Payment Setup
-                  </div>
-                  <div className="admin-form-grid" style={{ margin: 0 }}>
-                    <div className="admin-field">
-                      <label className="admin-label">Payment Status</label>
-                      <select name="paymentStatus" className="admin-modal-select" defaultValue="verified">
-                        <option value="verified">Verified (Paid) 🟢</option>
-                        <option value="pending">Pending Verification 🟡</option>
-                        <option value="unpaid">Unpaid 🔴</option>
-                      </select>
-                    </div>
-
-                    <div className="admin-field">
-                      <label className="admin-label">Amount (UGX)</label>
-                      <input type="number" name="paymentAmount" className="admin-input" defaultValue="25000" />
-                    </div>
-
-                    <div className="admin-field">
-                      <label className="admin-label">Payment Reference / Tx Code</label>
-                      <input type="text" name="paymentRef" className="admin-input" placeholder="e.g. MTN MoMo 078XXXXXXX or Tx ID" />
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-secondary"
-                    onClick={() => setIsAddModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="admin-btn admin-btn-primary">
-                    ✨ Create Profile
-                  </button>
-                </div>
-              </form>
+            <div
+              className="modal-content modal-content-large"
+              style={{
+                maxWidth: '1280px',
+                width: '96vw',
+                maxHeight: '94vh',
+                overflowY: 'auto',
+                padding: '1rem',
+                background: '#0d0d0d',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 214, 0, 0.25)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CreateProfileForm
+                isModal={true}
+                onCancel={() => setIsAddModalOpen(false)}
+                onSuccess={() => {
+                  setIsAddModalOpen(false);
+                  handleRefresh();
+                }}
+              />
             </div>
           </div>
         )}

@@ -257,6 +257,16 @@
   border-radius: 20px;
 }
 
+.edit-badge-new {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 46, 85, 0.15);
+  color: #FF2E55;
+  border: 1px solid rgba(255, 46, 85, 0.4);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
 .edit-badge-archived {
   font-size: 0.75rem;
   font-weight: 700;
