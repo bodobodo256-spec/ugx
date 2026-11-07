@@ -397,6 +397,8 @@ export async function adminCreateProfile(formData: FormData): Promise<
     const paymentRef  = ((formData.get('paymentRef') as string) ?? '').trim();
     const status      = ((formData.get('status') as string) ?? 'online') as Profile['status'];
     const picsCount   = parseInt((formData.get('picsCount') as string) || '1', 10);
+    const category    = ((formData.get('category')   as string) ?? 'Adult Hookups & Escorts').trim();
+    const services    = ((formData.get('services')   as string) ?? '').trim();
 
     if (!name || !age || !location || !city || !phone || !whatsapp) {
       return { success: false, error: 'Please fill in required fields (Name, Age, Location, City, Phone, WhatsApp).' };
@@ -471,6 +473,8 @@ export async function adminCreateProfile(formData: FormData): Promise<
       galleryUrls: galleryList.length ? JSON.stringify(galleryList) : null,
       videoUrls: videoList.length ? JSON.stringify(videoList) : null,
       about,
+      category,
+      services,
       phone,
       whatsapp,
     } satisfies NewProfile).returning({ id: profiles.id });
@@ -567,6 +571,13 @@ export async function adminUpdateProfile(
       paymentRef: paymentRef || null,
       picsCount: isNaN(picsCount) ? 0 : picsCount,
     };
+
+    if (formData.has('category')) {
+      updateFields.category = (formData.get('category') as string)?.trim() || null;
+    }
+    if (formData.has('services')) {
+      updateFields.services = (formData.get('services') as string)?.trim() || null;
+    }
 
     if (rawStatus === 'online' || rawStatus === 'recent') {
       updateFields.status = rawStatus;

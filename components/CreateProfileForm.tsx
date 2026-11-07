@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useTransition } from 'react';
+import React, { useState, useRef, useTransition, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LOCATIONS } from '@/data/locations';
@@ -8,25 +8,113 @@ import { type Profile } from '@/db/schema';
 import { adminCreateProfile } from '@/app/actions/profiles';
 import { compressImage } from '@/lib/image-compress';
 
+const AVAILABLE_SERVICES = [
+  'Incall (Private Place)',
+  'Outcall (Hotels & Homes)',
+  'Full Package (Hookup)',
+  'Body to Body Massage',
+  'Sensual Oil Massage',
+  'Overnight Stay',
+  'Dinner Date & Travel',
+  'Oral (Blowjob / BBB)',
+  'Roleplay & Fantasy',
+  'Car Play / Quickie',
+  'Couples Friendly',
+  'Deep Tissue Massage',
+  'Strictly Safe Sex',
+  'Shower Together',
+];
+
+const AVAILABLE_CATEGORIES = [
+  'VIP Escorts ⭐',
+  'Adult Hookups & Companions 🔥',
+  'Sensual Massage & Spa 💆',
+  'College & Young Babes 🎓',
+  'Curvy & Thick Babes 🍑',
+  'Discreet & High Class 💎',
+  'Travel & Dinner Dates ✈️',
+];
+
+const BODY_TYPES = [
+  'Curvy / Bootylicious',
+  'Slim & Petite',
+  'Thick / BBW',
+  'Athletic / Toned',
+  'Medium / Average',
+];
+
+const COMPLEXIONS = [
+  'Chocolate Skin',
+  'Light Skin / Brown',
+  'Caramel / Brown Skin',
+  'Ebony / Dark & Lovely',
+];
+
 interface CreateProfileFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
   isModal?: boolean;
 }
 
-export default function CreateProfileForm({ onSuccess, onCancel, isModal = false }: CreateProfileFormProps) {
+export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfileFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // Local form state with sensible defaults for quick creation
+  // ── Authentication Check ──
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(true);
+  const [passkeyInput, setPasskeyInput] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isAuth = localStorage.getItem('ug_admin_auth') === 'true';
+      setIsAdminAuthenticated(isAuth);
+    }
+  }, []);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passkey: passkeyInput.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsAdminAuthenticated(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ug_admin_auth', 'true');
+          localStorage.setItem('ug_admin_key', passkeyInput.trim());
+        }
+      } else {
+        setAuthError(data.error || 'Incorrect admin passkey. Please try again.');
+      }
+    } catch {
+      setAuthError('Connection error. Please try again.');
+    }
+  };
+
+  // ── Local Form State with Defaults ──
   const [name, setName] = useState('');
   const [age, setAge] = useState(22);
   const [city, setCity] = useState('Kampala');
   const [location, setLocation] = useState('Kololo, Kampala');
   const [tier, setTier] = useState<Profile['tier']>('VIP');
+  const [category, setCategory] = useState('VIP Escorts ⭐');
+  const [bodyType, setBodyType] = useState('Curvy / Bootylicious');
+  const [complexion, setComplexion] = useState('Chocolate Skin');
+  const [selectedServices, setSelectedServices] = useState<string[]>([
+    'Incall (Private Place)',
+    'Outcall (Hotels & Homes)',
+    'Full Package (Hookup)',
+  ]);
   const [phone, setPhone] = useState('+256');
   const [whatsapp, setWhatsapp] = useState('256');
-  const [about, setAbout] = useState('Sweet, friendly and discreet escort. Available for private hookups and intimate companionship.');
+  const [about, setAbout] = useState(
+    'Sweet, friendly and discreet companion. Available for private hookups, outcall hotel visits, and unforgettable intimate moments.'
+  );
   const [photoUrl, setPhotoUrl] = useState('');
   const [status, setStatus] = useState<Profile['status']>('online');
   const [picsCount, setPicsCount] = useState(1);
@@ -43,16 +131,13 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
   const [paymentAmount, setPaymentAmount] = useState(25000);
   const [paymentRef, setPaymentRef] = useState('');
 
-  // File upload preview
+  // Media
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string>('/logo.png');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Gallery state
   const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([]);
   const [newGalleryPreviews, setNewGalleryPreviews] = useState<string[]>([]);
-
-  // Video state
   const [newVideoFiles, setNewVideoFiles] = useState<File[]>([]);
 
   // Notification state
@@ -75,6 +160,12 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
     } else if (newTier === 'VIP Spa') {
       setPaymentAmount(35000);
     }
+  };
+
+  const toggleService = (srv: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(srv) ? prev.filter((s) => s !== srv) : [...prev, srv]
+    );
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,12 +233,14 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
       return;
     }
 
-    // Guarantee fields are accurately reflected
+    // Set all fields
     formData.set('name', name.trim());
     formData.set('age', String(age));
     formData.set('city', city);
     formData.set('location', location.trim());
     formData.set('tier', tier);
+    formData.set('category', category);
+    formData.set('services', selectedServices.join(', '));
     formData.set('phone', phone.trim());
     formData.set('whatsapp', whatsapp.trim());
     formData.set('about', about.trim());
@@ -199,7 +292,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
           }
         }
 
-        // Fallback to direct Server Action
+        // Direct Server Action fallback
         const res = await adminCreateProfile(formData);
         if (res.success) {
           showToast(`✅ Profile for ${name} created successfully in Cloudflare D1!`);
@@ -221,6 +314,40 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
       }
     });
   };
+
+  // If not authenticated, show smooth unlock box
+  if (!isAdminAuthenticated) {
+    return (
+      <div style={{ minHeight: '75vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', background: '#0a0a0a' }}>
+        <div style={{ maxWidth: '420px', width: '100%', background: '#141414', border: '1px solid #333', borderRadius: '16px', padding: '2rem', textAlign: 'center', color: '#fff' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: '48px', height: '48px', margin: '0 auto 1rem', display: 'block' }} />
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem', color: '#FFD600' }}>Admin Authentication Required</h2>
+          <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Please enter your admin passkey to access the profile creator.</p>
+          <form onSubmit={handleAdminLogin}>
+            <input
+              type="password"
+              className="edit-input"
+              style={{ width: '100%', marginBottom: '1rem', textAlign: 'center', fontSize: '1rem' }}
+              placeholder="Enter Admin Passkey"
+              value={passkeyInput}
+              onChange={(e) => setPasskeyInput(e.target.value)}
+              autoFocus
+              required
+            />
+            {authError && <div style={{ color: '#FF2E55', fontSize: '0.82rem', marginBottom: '1rem' }}>{authError}</div>}
+            <button type="submit" className="sticky-btn-save" style={{ width: '100%', padding: '0.75rem', justifyContent: 'center' }}>
+              🔒 Unlock Form
+            </button>
+            <div style={{ marginTop: '1rem' }}>
+              <Link href="/admin" style={{ color: '#888', fontSize: '0.8rem', textDecoration: 'none' }}>
+                ← Return to Dashboard
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="edit-page-container">
@@ -256,7 +383,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
         </div>
         <div className="edit-top-actions">
           <span style={{ fontSize: '0.85rem', color: '#FFD600', fontWeight: 600 }}>
-            ✨ New Profile Mode
+            ✨ Modern Profile Creator
           </span>
         </div>
       </div>
@@ -287,7 +414,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
         <div className="edit-hero-info">
           <div className="edit-hero-name-row">
             <h1 className="edit-hero-title">{name || 'New Profile Name'}</h1>
-            <span className="edit-id-badge">ID #New</span>
+            <span className="edit-id-badge">ID #Draft</span>
             <span className={`edit-tier-pill tier-${tier.toLowerCase().replace(/\s+/g, '-')}`}>
               {tier}
             </span>
@@ -303,7 +430,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
           </div>
 
           <p className="edit-hero-subtitle">
-            📍 {location ? `${location}, ${city}` : city} • Age: {age} • Phone: {phone}
+            📍 {location ? `${location}, ${city}` : city} • Age: {age} • Phone: {phone} • {category}
           </p>
         </div>
 
@@ -333,8 +460,8 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
               <div className="edit-card-header">
                 <span className="edit-card-icon">👤</span>
                 <div>
-                  <h2 className="edit-card-title">Identity &amp; Location</h2>
-                  <p className="edit-card-desc">Personal profile details and primary city location</p>
+                  <h2 className="edit-card-title">Identity &amp; Profile Details</h2>
+                  <p className="edit-card-desc">Personal details, category, city and appearance</p>
                 </div>
               </div>
 
@@ -352,7 +479,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                     className="edit-input"
                     placeholder="e.g. Angel, Brenda, Natasha"
                   />
-                  <span className="edit-hint">Name displayed on public search, cards and banner</span>
+                  <span className="edit-hint">Publicly displayed name on cards and search</span>
                 </div>
 
                 <div className="edit-field">
@@ -369,14 +496,14 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                     required
                     className="edit-input"
                   />
-                  <span className="edit-hint">Must be 18+ for adult directory compliance</span>
+                  <span className="edit-hint">Must be 18+ for adult compliance</span>
                 </div>
               </div>
 
               <div className="edit-grid-2" style={{ marginTop: '1.25rem' }}>
                 <div className="edit-field">
                   <label className="edit-label">
-                    City <span className="req">*</span>
+                    City / Town <span className="req">*</span>
                   </label>
                   <select
                     name="city"
@@ -391,7 +518,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                       </option>
                     ))}
                   </select>
-                  <span className="edit-hint">Primary city for SEO landing pages and filters</span>
+                  <span className="edit-hint">Primary city for SEO landing pages</span>
                 </div>
 
                 <div className="edit-field">
@@ -405,9 +532,58 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                     onChange={(e) => setLocation(e.target.value)}
                     required
                     className="edit-input"
-                    placeholder="e.g. Kololo, Ntinda, Kabalagala"
+                    placeholder="e.g. Kololo, Ntinda, Kabalagala, Munyonyo"
                   />
-                  <span className="edit-hint">Neighborhood or street for local search queries</span>
+                  <span className="edit-hint">Neighborhood or street for local searches</span>
+                </div>
+              </div>
+
+              {/* Category & Appearance */}
+              <div className="edit-grid-3" style={{ marginTop: '1.25rem' }}>
+                <div className="edit-field">
+                  <label className="edit-label">Primary Category</label>
+                  <select
+                    name="category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="edit-select"
+                  >
+                    {AVAILABLE_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="edit-field">
+                  <label className="edit-label">Body Type</label>
+                  <select
+                    value={bodyType}
+                    onChange={(e) => setBodyType(e.target.value)}
+                    className="edit-select"
+                  >
+                    {BODY_TYPES.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="edit-field">
+                  <label className="edit-label">Complexion</label>
+                  <select
+                    value={complexion}
+                    onChange={(e) => setComplexion(e.target.value)}
+                    className="edit-select"
+                  >
+                    {COMPLEXIONS.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -425,12 +601,54 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                   placeholder="Describe services, availability, preferences, massage packages, and outcall/incall arrangements..."
                 />
                 <span className="edit-hint">
-                  A detailed bio with verified details receives 3x more WhatsApp calls.
+                  A detailed bio with verified details receives 3x more calls and bookings.
                 </span>
               </div>
             </div>
 
-            {/* Section 2: Contact Channels */}
+            {/* Section 2: Services Checkboxes / Tags */}
+            <div className="edit-card">
+              <div className="edit-card-header">
+                <span className="edit-card-icon">🔥</span>
+                <div>
+                  <h2 className="edit-card-title">Services Offered</h2>
+                  <p className="edit-card-desc">Tap tags to select or deselect specific services provided</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {AVAILABLE_SERVICES.map((srv) => {
+                  const isChecked = selectedServices.includes(srv);
+                  return (
+                    <button
+                      key={srv}
+                      type="button"
+                      onClick={() => toggleService(srv)}
+                      style={{
+                        background: isChecked ? 'rgba(255, 214, 0, 0.18)' : '#1a1a1a',
+                        border: isChecked ? '1px solid #FFD600' : '1px solid #333',
+                        color: isChecked ? '#FFD600' : '#aaa',
+                        fontWeight: isChecked ? 700 : 500,
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '20px',
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <span>{isChecked ? '✓' : '+'}</span>
+                      {srv}
+                    </button>
+                  );
+                })}
+              </div>
+              <input type="hidden" name="services" value={selectedServices.join(', ')} />
+            </div>
+
+            {/* Section 3: Contact Channels */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">📞</span>
@@ -476,12 +694,24 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                       placeholder="e.g. 256700000000"
                     />
                   </div>
-                  <span className="edit-hint">Direct chat opened on &quot;WhatsApp&quot; button tap</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                    <span className="edit-hint">Direct chat opened on &quot;WhatsApp&quot; button</span>
+                    {whatsapp && whatsapp.length > 5 && (
+                      <a
+                        href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontSize: '0.75rem', color: '#00E676', textDecoration: 'none' }}
+                      >
+                        ↗ Test WhatsApp Link
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Section 3: Billing & Payment Verification */}
+            {/* Section 4: Billing & Payment Verification */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">💳</span>
@@ -523,6 +753,9 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                     <button type="button" onClick={() => setPaymentAmount(25000)} className="preset-btn">
                       25k (VIP)
                     </button>
+                    <button type="button" onClick={() => setPaymentAmount(35000)} className="preset-btn">
+                      35k
+                    </button>
                     <button type="button" onClick={() => setPaymentAmount(50000)} className="preset-btn">
                       50k
                     </button>
@@ -547,12 +780,12 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
 
           {/* Right Column: Media & Badges */}
           <div className="edit-col-sidebar">
-            {/* Section 4: Photo & Media (Cloudflare R2) */}
+            {/* Section 5: Photo & Media (Cloudflare R2) */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">📸</span>
                 <div>
-                  <h2 className="edit-card-title">Profile Photo</h2>
+                  <h2 className="edit-card-title">Primary Profile Photo</h2>
                   <p className="edit-card-desc">Uploaded to Cloudflare R2 bucket</p>
                 </div>
               </div>
@@ -579,7 +812,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                   onChange={handleFileChange}
                   className="edit-file-input"
                 />
-                <span className="edit-hint">JPEG, PNG or WebP up to 10MB</span>
+                <span className="edit-hint">Auto-compressed client-side before upload</span>
               </div>
 
               <div className="edit-field" style={{ marginTop: '1rem' }}>
@@ -601,7 +834,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
               </div>
 
               <div className="edit-field" style={{ marginTop: '1rem' }}>
-                <label className="edit-label">Total Gallery Photos</label>
+                <label className="edit-label">Total Photos Count Displayed</label>
                 <input
                   type="number"
                   name="picsCount"
@@ -614,7 +847,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
               </div>
             </div>
 
-            {/* Section 5: Gallery Photos (R2) */}
+            {/* Section 6: Gallery Photos (R2) */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">🖼️</span>
@@ -672,16 +905,16 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                   onChange={handleGalleryChange}
                   className="edit-file-input"
                 />
-                <span className="edit-hint">Select multiple photos at once. JPEG, PNG, WebP up to 10MB each.</span>
+                <span className="edit-hint">Select multiple photos at once. Compressed before R2 upload.</span>
               </div>
             </div>
 
-            {/* Section 6: Videos (R2) */}
+            {/* Section 7: Videos (R2) */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">🎬</span>
                 <div>
-                  <h2 className="edit-card-title">Videos</h2>
+                  <h2 className="edit-card-title">Video Clips</h2>
                   <p className="edit-card-desc">Upload video clips displayed on the profile page</p>
                 </div>
               </div>
@@ -737,12 +970,12 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
               </div>
             </div>
 
-            {/* Section 7: Tier & Badges */}
+            {/* Section 8: Tier & Badges */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">🏷️</span>
                 <div>
-                  <h2 className="edit-card-title">Listing &amp; Badges</h2>
+                  <h2 className="edit-card-title">Listing Tier &amp; Trust Badges</h2>
                   <p className="edit-card-desc">Control visibility, tier, and trust badges</p>
                 </div>
               </div>
@@ -770,7 +1003,7 @@ export default function CreateProfileForm({ onSuccess, onCancel, isModal = false
                   onChange={(e) => setStatus(e.target.value as any)}
                   className="edit-select"
                 >
-                  <option value="online">Online Now 🟢 (Top Priority)</option>
+                  <option value="online">Online Now 🟢 (Top Priority on Home)</option>
                   <option value="recent">Recently Active ⚪</option>
                 </select>
               </div>

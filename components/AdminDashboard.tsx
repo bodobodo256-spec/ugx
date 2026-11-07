@@ -48,15 +48,12 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   const [toastIsError, setToastIsError] = useState(false);
 
   // ── Modals State ──
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [paymentModalProfile, setPaymentModalProfile] = useState<Profile | null>(null);
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
   // ── View Mode (table for desktop, cards for mobile) ──
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
-
-  const addPhotoInputRef = useRef<HTMLInputElement>(null);
 
   // ── Sync profilesList when server re-fetches (router.refresh()) ──
   useEffect(() => {
@@ -291,30 +288,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
       () => setProfilesList((prev) => prev.filter((p) => p.id !== profile.id))
     );
     setActionLoadingId(null);
-  };
-
-  // ── Add Profile Form Submission ──
-  const handleAddSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    const res = await adminCreateProfile(formData);
-    if (res.success) {
-      showToast('✅ New profile created and saved to database!');
-      setIsAddModalOpen(false);
-      try {
-        const fresh = await fetchAdminProfiles();
-        if (fresh && fresh.length) setProfilesList(fresh);
-      } catch (err) {
-        console.error('Fetch error:', err);
-      }
-      startTransition(() => { router.refresh(); });
-    } else {
-      const err = 'error' in res ? res.error : 'Failed to create profile';
-      showToast(`❌ Create failed: ${err}`, true);
-      alert(`Failed to create profile:\n\n${err}`);
-    }
   };
 
   // ── Payment Detail Modal Update ──
@@ -641,6 +614,14 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
                 📋 Table
               </button>
             </div>
+
+            <Link
+              href="/admin/create"
+              className="admin-btn admin-btn-primary admin-btn-add-profile"
+              style={{ textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              ➕ Add New Profile
+            </Link>
 
             {(searchQuery || selectedCity) && (
               <button
@@ -1064,35 +1045,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               )}
             </tbody>
           </table>
-          </div>
-        )}
-
-        {/* ══ MODAL 1: ADD NEW PROFILE (EXACT EDIT PROFILE DESIGN) ══ */}
-        {isAddModalOpen && (
-          <div className="modal-overlay" onClick={() => setIsAddModalOpen(false)}>
-            <div
-              className="modal-content modal-content-large"
-              style={{
-                maxWidth: '1280px',
-                width: '96vw',
-                maxHeight: '94vh',
-                overflowY: 'auto',
-                padding: '1rem',
-                background: '#0d0d0d',
-                borderRadius: '16px',
-                border: '1px solid rgba(255, 214, 0, 0.25)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <CreateProfileForm
-                isModal={true}
-                onCancel={() => setIsAddModalOpen(false)}
-                onSuccess={() => {
-                  setIsAddModalOpen(false);
-                  handleRefresh();
-                }}
-              />
-            </div>
           </div>
         )}
 
