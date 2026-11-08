@@ -8,6 +8,7 @@ import { LOCATIONS } from '@/data/locations';
 import { type Profile } from '@/db/schema';
 import { adminUpdateProfile, deleteProfile } from '@/app/actions/profiles';
 import { compressImage } from '@/lib/image-compress';
+import { uploadFileToR2 } from '@/lib/upload-client';
 
 interface EditProfileFormProps {
   profile: Profile;

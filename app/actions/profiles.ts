@@ -122,9 +122,9 @@ export async function createProfile(formData: FormData): Promise<
         galleryList.push(...rawGalleryUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
       }
     }
-    for (const gFile of galleryFiles) {
-      const gUrl = await uploadMedia(gFile, slug);
-      if (gUrl) galleryList.push(gUrl);
+    if (galleryFiles.length > 0) {
+      const gUrls = await Promise.all(galleryFiles.map(f => uploadMedia(f, slug)));
+      for (const u of gUrls) if (u) galleryList.push(u);
     }
 
     // Upload videos to R2
@@ -137,9 +137,9 @@ export async function createProfile(formData: FormData): Promise<
         videoList.push(...rawVideoUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
       }
     }
-    for (const vFile of videoFiles) {
-      const vUrl = await uploadMedia(vFile, slug);
-      if (vUrl) videoList.push(vUrl);
+    if (videoFiles.length > 0) {
+      const vUrls = await Promise.all(videoFiles.map(f => uploadMedia(f, slug)));
+      for (const u of vUrls) if (u) videoList.push(u);
     }
 
     // Weekly pricing: Standard = 10,000 UGX, VIP = 25,000 UGX
@@ -424,9 +424,9 @@ export async function adminCreateProfile(formData: FormData): Promise<
         galleryList.push(...rawGalleryUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
       }
     }
-    for (const gFile of galleryFiles) {
-      const gUrl = await uploadMedia(gFile, slug);
-      if (gUrl) galleryList.push(gUrl);
+    if (galleryFiles.length > 0) {
+      const gUrls = await Promise.all(galleryFiles.map(f => uploadMedia(f, slug)));
+      for (const u of gUrls) if (u) galleryList.push(u);
     }
 
     // Upload videos to R2
@@ -441,9 +441,9 @@ export async function adminCreateProfile(formData: FormData): Promise<
         videoList.push(...rawVideoUrls.split(/[\n,]+/).map(s => s.trim()).filter(Boolean));
       }
     }
-    for (const vFile of videoFiles) {
-      const vUrl = await uploadMedia(vFile, slug);
-      if (vUrl) videoList.push(vUrl);
+    if (videoFiles.length > 0) {
+      const vUrls = await Promise.all(videoFiles.map(f => uploadMedia(f, slug)));
+      for (const u of vUrls) if (u) videoList.push(u);
     }
 
     const finalTier = isVip ? 'VIP' : isPremium ? 'Premium' : tier;
@@ -629,9 +629,9 @@ export async function adminUpdateProfile(
     }
 
     const newVideoFiles = formData.getAll('videos').filter((item): item is File => item instanceof File && item.size > 0);
-    for (const vFile of newVideoFiles) {
-      const vUrl = await uploadMedia(vFile, `profile-${id}`);
-      if (vUrl) videoList.push(vUrl);
+    if (newVideoFiles.length > 0) {
+      const vUrls = await Promise.all(newVideoFiles.map(f => uploadMedia(f, `profile-${id}`)));
+      for (const u of vUrls) if (u) videoList.push(u);
     }
     if (rawVideoUrls !== null || newVideoFiles.length > 0) {
       updateFields.videoUrls = videoList.length ? JSON.stringify(videoList) : null;

@@ -7,6 +7,7 @@ import { LOCATIONS } from '@/data/locations';
 import { type Profile } from '@/db/schema';
 import { adminCreateProfile } from '@/app/actions/profiles';
 import { compressImage } from '@/lib/image-compress';
+import { uploadFileToR2 } from '@/lib/upload-client';
 
 const AVAILABLE_SERVICES = [
   'Incall (Private Place)',
@@ -96,7 +97,7 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
     }
   };
 
-  // ── Local Form State with Defaults ──
+  // ── Local Form State with Sensible Defaults ──
   const [name, setName] = useState('');
   const [age, setAge] = useState(22);
   const [city, setCity] = useState('Kampala');
@@ -115,7 +116,25 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
   const [about, setAbout] = useState(
     'Sweet, friendly and discreet companion. Available for private hookups, outcall hotel visits, and unforgettable intimate moments.'
   );
+
+  // ── Media State (Uploaded URLs) ──
   const [photoUrl, setPhotoUrl] = useState('');
+  const [previewImage, setPreviewImage] = useState<string>('/logo.png');
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const [photoProgress, setPhotoProgress] = useState(0);
+
+  // Gallery
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+  const [galleryProgressText, setGalleryProgressText] = useState('');
+
+  // Videos
+  const [videoUrls, setVideoUrls] = useState<string[]>([]);
+  const [customVideoInput, setCustomVideoInput] = useState('');
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoStatusText, setVideoStatusText] = useState('');
+
   const [status, setStatus] = useState<Profile['status']>('online');
   const [picsCount, setPicsCount] = useState(1);
 
@@ -131,21 +150,12 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
   const [paymentAmount, setPaymentAmount] = useState(25000);
   const [paymentRef, setPaymentRef] = useState('');
 
-  // Media
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string>('/logo.png');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([]);
-  const [newGalleryPreviews, setNewGalleryPreviews] = useState<string[]>([]);
-  const [newVideoFiles, setNewVideoFiles] = useState<File[]>([]);
-
   // Notification state
   const [toast, setToast] = useState<{ message: string; isError?: boolean } | null>(null);
 
   const showToast = (message: string, isError = false) => {
     setToast({ message, isError });
-    setTimeout(() => setToast(null), 4000);
+    setTimeout(() => setToast(null), 5000);
   };
 
   const handleTierChange = (newTier: Profile['tier']) => {
@@ -168,72 +178,148 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
     );
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Profile Photo Upload Handler (Uploads Immediately to R2) ──
+  const handlePhotoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    try {
+      setIsPhotoUploading(true);
+      setPhotoProgress(10);
+      const localPreview = URL.createObjectURL(file);
+      setPreviewImage(localPreview);
+
+      // Compress client-side
       const optimized = await compressImage(file);
-      setSelectedFile(optimized);
-      const objectUrl = URL.createObjectURL(optimized);
-      setPreviewImage(objectUrl);
+      setPhotoProgress(30);
+
+      // Upload directly to Cloudflare R2
+      const slugFolder = name.trim() ? name.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'profile-photo';
+      const uploadedUrl = await uploadFileToR2(optimized, slugFolder, (pct) => {
+        setPhotoProgress(Math.max(30, pct));
+      });
+
+      setPhotoUrl(uploadedUrl);
+      setPreviewImage(uploadedUrl);
+      setPhotoProgress(100);
+      showToast('✅ Profile photo uploaded to Cloudflare R2 storage!');
+    } catch (err: any) {
+      console.error('[handlePhotoFileSelect error]', err);
+      showToast(`❌ Photo upload failed: ${err.message || 'Error uploading image'}`, true);
+    } finally {
+      setIsPhotoUploading(false);
     }
   };
 
-  const handleGalleryChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Gallery Multi-Upload Handler (Uploads Immediately to R2 in parallel) ──
+  const handleGalleryFilesSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
-    const optimizedFiles: File[] = [];
-    for (const f of files) {
-      optimizedFiles.push(await compressImage(f));
-    }
+    setIsGalleryUploading(true);
+    setGalleryProgressText(`Compressing & preparing ${files.length} photo(s)...`);
 
-    setNewGalleryFiles((prev) => [...prev, ...optimizedFiles]);
-    const previews = optimizedFiles.map((f) => URL.createObjectURL(f));
-    setNewGalleryPreviews((prev) => [...prev, ...previews]);
-    setPicsCount((prev) => prev + optimizedFiles.length);
+    try {
+      const slugFolder = name.trim() ? name.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'gallery';
+      let completedCount = 0;
+
+      const uploadPromises = files.map(async (file) => {
+        const optimized = await compressImage(file);
+        const url = await uploadFileToR2(optimized, slugFolder);
+        completedCount++;
+        setGalleryProgressText(`Uploaded ${completedCount} of ${files.length} photos...`);
+        return url;
+      });
+
+      const newUrls = await Promise.all(uploadPromises);
+      const validUrls = newUrls.filter(Boolean);
+
+      setGalleryUrls((prev) => [...prev, ...validUrls]);
+      setPicsCount((prev) => Math.max(1, prev + validUrls.length));
+      showToast(`✅ Added ${validUrls.length} photo(s) to gallery!`);
+    } catch (err: any) {
+      console.error('[handleGalleryFilesSelect error]', err);
+      showToast(`❌ Gallery upload failed: ${err.message}`, true);
+    } finally {
+      setIsGalleryUploading(false);
+      setGalleryProgressText('');
+      e.target.value = '';
+    }
   };
 
-  const removeNewGallery = (idx: number) => {
-    setNewGalleryFiles((prev) => prev.filter((_, i) => i !== idx));
-    setNewGalleryPreviews((prev) => prev.filter((_, i) => i !== idx));
+  const removeGalleryPhoto = (idx: number) => {
+    setGalleryUrls((prev) => prev.filter((_, i) => i !== idx));
     setPicsCount((prev) => Math.max(1, prev - 1));
   };
 
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ── Video Upload Handler (Uploads Directly to R2 with live progress) ──
+  const handleVideoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
 
-    const MAX_VIDEO_SIZE = 4.5 * 1024 * 1024; // 4.5MB Vercel limit
-    const validFiles: File[] = [];
+    const file = files[0];
+    const sizeMb = (file.size / 1024 / 1024).toFixed(1);
 
-    for (const f of files) {
-      if (f.size > MAX_VIDEO_SIZE) {
-        showToast(`⚠️ "${f.name}" is ${(f.size / 1024 / 1024).toFixed(1)}MB. Max video upload size is 4.5MB.`, true);
-      } else {
-        validFiles.push(f);
-      }
-    }
+    setIsVideoUploading(true);
+    setVideoProgress(5);
+    setVideoStatusText(`Preparing "${file.name}" (${sizeMb} MB)...`);
 
-    if (validFiles.length) {
-      setNewVideoFiles((prev) => [...prev, ...validFiles]);
+    try {
+      const slugFolder = name.trim() ? name.toLowerCase().replace(/[^a-z0-9]/g, '-') : 'videos';
+
+      const uploadedUrl = await uploadFileToR2(file, slugFolder, (pct) => {
+        setVideoProgress(pct);
+        setVideoStatusText(`Uploading "${file.name}" directly to R2: ${pct}%`);
+      });
+
+      setVideoUrls((prev) => [...prev, uploadedUrl]);
+      setVideoProgress(100);
+      showToast(`✅ Video "${file.name}" uploaded successfully to Cloudflare R2!`);
+    } catch (err: any) {
+      console.error('[handleVideoFileSelect error]', err);
+      showToast(`❌ Video upload failed: ${err.message}`, true);
+    } finally {
+      setIsVideoUploading(false);
+      setVideoProgress(0);
+      setVideoStatusText('');
+      e.target.value = '';
     }
   };
 
-  const removeNewVideo = (idx: number) => {
-    setNewVideoFiles((prev) => prev.filter((_, i) => i !== idx));
+  const addCustomVideoUrl = () => {
+    if (!customVideoInput.trim()) return;
+    const url = customVideoInput.trim();
+    if (!url.startsWith('http')) {
+      showToast('⚠️ Video URL must begin with http:// or https://', true);
+      return;
+    }
+    setVideoUrls((prev) => [...prev, url]);
+    setCustomVideoInput('');
+    showToast('✅ Video link added!');
   };
 
+  const removeVideo = (idx: number) => {
+    setVideoUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // ── Submit Profile (Fast, Lightweight 2KB Payload) ──
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
 
     if (!name.trim()) {
       showToast('⚠️ Please enter a model name / alias.', true);
       return;
     }
 
-    // Set all fields
+    if (isPhotoUploading || isGalleryUploading || isVideoUploading) {
+      showToast('⏳ Media upload is currently in progress. Please wait a moment until it finishes.', true);
+      return;
+    }
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    // Set all text metadata & pre-uploaded URLs
     formData.set('name', name.trim());
     formData.set('age', String(age));
     formData.set('city', city);
@@ -245,8 +331,10 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
     formData.set('whatsapp', whatsapp.trim());
     formData.set('about', about.trim());
     formData.set('photoUrl', photoUrl.trim());
+    formData.set('galleryUrls', JSON.stringify(galleryUrls));
+    formData.set('videoUrls', JSON.stringify(videoUrls));
     formData.set('status', status);
-    formData.set('picsCount', String(picsCount));
+    formData.set('picsCount', String(Math.max(picsCount, (photoUrl ? 1 : 0) + galleryUrls.length)));
     formData.set('isApproved', isApproved ? 'true' : 'false');
     formData.set('isVerified', isVerified ? 'true' : 'false');
     formData.set('isPremium', isPremium ? 'true' : 'false');
@@ -255,14 +343,6 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
     formData.set('paymentStatus', paymentStatus ?? 'verified');
     formData.set('paymentAmount', String(paymentAmount));
     formData.set('paymentRef', paymentRef.trim());
-
-    if (selectedFile) {
-      formData.set('photo', selectedFile);
-    }
-
-    // Gallery & videos
-    newGalleryFiles.forEach((f) => formData.append('gallery', f));
-    newVideoFiles.forEach((f) => formData.append('videos', f));
 
     startTransition(async () => {
       try {
@@ -276,14 +356,14 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
         if (response.ok) {
           const res = await response.json();
           if (res.success) {
-            showToast(`✅ Profile for ${name} created successfully in Cloudflare D1!`);
+            showToast(`✅ Profile for ${name} created and published successfully!`);
             if (onSuccess) {
               onSuccess();
             } else {
               setTimeout(() => {
                 router.push('/admin');
                 router.refresh();
-              }, 1200);
+              }, 1000);
             }
             return;
           } else {
@@ -295,14 +375,14 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
         // Direct Server Action fallback
         const res = await adminCreateProfile(formData);
         if (res.success) {
-          showToast(`✅ Profile for ${name} created successfully in Cloudflare D1!`);
+          showToast(`✅ Profile for ${name} created successfully!`);
           if (onSuccess) {
             onSuccess();
           } else {
             setTimeout(() => {
               router.push('/admin');
               router.refresh();
-            }, 1200);
+            }, 1000);
           }
         } else {
           const err = 'error' in res ? res.error : 'Failed to create profile';
@@ -310,7 +390,7 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
         }
       } catch (err: any) {
         console.error('Create error:', err);
-        showToast(`❌ Create error: ${err?.message || 'Network error occurred while saving.'}`, true);
+        showToast(`❌ Save error: ${err?.message || 'Network error occurred while saving.'}`, true);
       }
     });
   };
@@ -383,7 +463,7 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
         </div>
         <div className="edit-top-actions">
           <span style={{ fontSize: '0.85rem', color: '#FFD600', fontWeight: 600 }}>
-            ✨ Modern Profile Creator
+            ✨ Fast Profile Creator (R2 Direct)
           </span>
         </div>
       </div>
@@ -444,7 +524,7 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
           <div className="quick-meta-box">
             <span className="quick-meta-label">Status</span>
             <span className="quick-meta-value" style={{ color: '#00E676' }}>
-              ✨ Creating New
+              ✨ Instant Save Ready
             </span>
           </div>
         </div>
@@ -645,7 +725,6 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                   );
                 })}
               </div>
-              <input type="hidden" name="services" value={selectedServices.join(', ')} />
             </div>
 
             {/* Section 3: Contact Channels */}
@@ -780,18 +859,18 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
 
           {/* Right Column: Media & Badges */}
           <div className="edit-col-sidebar">
-            {/* Section 5: Photo & Media (Cloudflare R2) */}
+            {/* Section 5: Photo & Media (Cloudflare R2 Direct) */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">📸</span>
                 <div>
                   <h2 className="edit-card-title">Primary Profile Photo</h2>
-                  <p className="edit-card-desc">Uploaded to Cloudflare R2 bucket</p>
+                  <p className="edit-card-desc">Uploaded directly to Cloudflare R2 bucket</p>
                 </div>
               </div>
 
               {/* Photo Preview Box */}
-              <div className="edit-photo-preview-box">
+              <div className="edit-photo-preview-box" style={{ position: 'relative' }}>
                 <img
                   src={previewImage}
                   alt="Profile Preview"
@@ -800,26 +879,61 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                     (e.target as HTMLImageElement).src = '/logo.png';
                   }}
                 />
+                {isPhotoUploading && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(0,0,0,0.7)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#FFD600',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <span className="spinner" style={{ width: '24px', height: '24px', border: '3px solid #333', borderTop: '3px solid #FFD600', borderRadius: '50%' }} />
+                    <span>Uploading: {photoProgress}%</span>
+                  </div>
+                )}
+                {photoUrl && !isPhotoUploading && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      right: '8px',
+                      background: 'rgba(0, 230, 118, 0.9)',
+                      color: '#000',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: '10px',
+                    }}
+                  >
+                    ✓ R2 Ready
+                  </div>
+                )}
               </div>
 
               <div className="edit-field" style={{ marginTop: '1rem' }}>
-                <label className="edit-label">Upload Photo to R2</label>
+                <label className="edit-label">Upload Photo (Immediate R2 Direct)</label>
                 <input
                   type="file"
-                  name="photo"
-                  ref={fileInputRef}
                   accept="image/*"
-                  onChange={handleFileChange}
+                  onChange={handlePhotoFileSelect}
+                  disabled={isPhotoUploading}
                   className="edit-file-input"
                 />
-                <span className="edit-hint">Auto-compressed client-side before upload</span>
+                <span className="edit-hint">Auto-compressed and uploaded to R2 immediately</span>
               </div>
 
               <div className="edit-field" style={{ marginTop: '1rem' }}>
                 <label className="edit-label">Or Custom Image URL</label>
                 <input
                   type="url"
-                  name="photoUrl"
                   value={photoUrl}
                   onChange={(e) => {
                     setPhotoUrl(e.target.value);
@@ -837,7 +951,6 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                 <label className="edit-label">Total Photos Count Displayed</label>
                 <input
                   type="number"
-                  name="picsCount"
                   min="0"
                   max="50"
                   value={picsCount}
@@ -853,23 +966,23 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                 <span className="edit-card-icon">🖼️</span>
                 <div>
                   <h2 className="edit-card-title">Gallery Photos</h2>
-                  <p className="edit-card-desc">Upload multiple photos to showcase on the profile page</p>
+                  <p className="edit-card-desc">Uploaded in parallel to Cloudflare R2</p>
                 </div>
               </div>
 
-              {/* New gallery previews */}
-              {newGalleryPreviews.length > 0 && (
+              {/* Gallery previews */}
+              {galleryUrls.length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
                   <span className="edit-label" style={{ marginBottom: '0.6rem', display: 'block', color: '#34C759' }}>
-                    New Photos to Upload ({newGalleryPreviews.length})
+                    Gallery Photos Ready ({galleryUrls.length})
                   </span>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '0.5rem' }}>
-                    {newGalleryPreviews.map((url, idx) => (
-                      <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', background: '#1a1a1a', border: '2px solid #34C759' }}>
-                        <img src={url} alt={`New ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {galleryUrls.map((url, idx) => (
+                      <div key={idx} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', background: '#1a1a1a', border: '1px solid #34C759' }}>
+                        <img src={url} alt={`Gallery ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button
                           type="button"
-                          onClick={() => removeNewGallery(idx)}
+                          onClick={() => removeGalleryPhoto(idx)}
                           title="Remove"
                           style={{
                             position: 'absolute',
@@ -896,48 +1009,61 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                 </div>
               )}
 
+              {isGalleryUploading && (
+                <div style={{ padding: '0.6rem 0.8rem', background: 'rgba(255,214,0,0.1)', border: '1px solid #FFD600', borderRadius: '8px', color: '#FFD600', fontSize: '0.8rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="spinner" style={{ width: '14px', height: '14px', border: '2px solid #333', borderTop: '2px solid #FFD600', borderRadius: '50%' }} />
+                  <span>{galleryProgressText || 'Uploading gallery photos to R2...'}</span>
+                </div>
+              )}
+
               <div className="edit-field">
                 <label className="edit-label">Add Gallery Photos</label>
                 <input
                   type="file"
                   accept="image/*"
                   multiple
-                  onChange={handleGalleryChange}
+                  disabled={isGalleryUploading}
+                  onChange={handleGalleryFilesSelect}
                   className="edit-file-input"
                 />
-                <span className="edit-hint">Select multiple photos at once. Compressed before R2 upload.</span>
+                <span className="edit-hint">Select multiple photos. Uploads immediately in parallel to R2.</span>
               </div>
             </div>
 
-            {/* Section 7: Videos (R2) */}
+            {/* Section 7: Videos (R2 Direct Upload - No Size Limit) */}
             <div className="edit-card">
               <div className="edit-card-header">
                 <span className="edit-card-icon">🎬</span>
                 <div>
                   <h2 className="edit-card-title">Video Clips</h2>
-                  <p className="edit-card-desc">Upload video clips displayed on the profile page</p>
+                  <p className="edit-card-desc">Direct upload to Cloudflare R2 (supports 10MB - 100MB+)</p>
                 </div>
               </div>
 
-              {/* New video files queued */}
-              {newVideoFiles.length > 0 && (
+              {/* Uploaded videos list */}
+              {videoUrls.length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
                   <span className="edit-label" style={{ marginBottom: '0.6rem', display: 'block', color: '#34C759' }}>
-                    New Videos to Upload ({newVideoFiles.length})
+                    Videos Attached ({videoUrls.length})
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {newVideoFiles.map((f, idx) => (
+                    {videoUrls.map((url, idx) => (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#0d1f0d', borderRadius: '8px', padding: '0.6rem 0.75rem', border: '1px solid #34C759' }}>
-                        <span style={{ fontSize: '1.25rem' }}>🎞️</span>
+                        <span style={{ fontSize: '1.25rem' }}>🎥</span>
                         <span style={{ flex: 1, fontSize: '0.8rem', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {f.name}
+                          {url.split('/').pop() || url}
                         </span>
-                        <span style={{ fontSize: '0.72rem', color: '#888', flexShrink: 0 }}>
-                          {(f.size / 1024 / 1024).toFixed(1)} MB
-                        </span>
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.75rem', color: '#64B5F6', textDecoration: 'none', fontWeight: 600 }}
+                        >
+                          ↗ Preview
+                        </a>
                         <button
                           type="button"
-                          onClick={() => removeNewVideo(idx)}
+                          onClick={() => removeVideo(idx)}
                           style={{
                             background: 'rgba(255,59,48,0.15)',
                             border: '1px solid rgba(255,59,48,0.4)',
@@ -957,16 +1083,60 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                 </div>
               )}
 
+              {/* Active Video Upload Progress Bar */}
+              {isVideoUploading && (
+                <div style={{ marginBottom: '1rem', background: '#111', border: '1px solid #FFD600', borderRadius: '10px', padding: '0.85rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#FFD600', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    <span>{videoStatusText || 'Uploading video to R2...'}</span>
+                    <span>{videoProgress}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#222', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${videoProgress}%`,
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #FFD600, #00E676)',
+                        transition: 'width 0.2s ease',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="edit-field">
-                <label className="edit-label">Upload Videos</label>
+                <label className="edit-label">Upload Video File (Direct to R2)</label>
                 <input
                   type="file"
                   accept="video/*"
-                  multiple
-                  onChange={handleVideoChange}
+                  disabled={isVideoUploading}
+                  onChange={handleVideoFileSelect}
                   className="edit-file-input"
                 />
-                <span className="edit-hint">MP4, MOV, WebM up to 4.5MB each. Videos are streamed from R2.</span>
+                <span className="edit-hint">Direct-to-R2 upload bypasses server payload limits. MP4, MOV, WebM.</span>
+              </div>
+
+              {/* Direct Video URL Input */}
+              <div className="edit-field" style={{ marginTop: '1rem' }}>
+                <label className="edit-label">Or Add Video Link (R2, CDN, Stream)</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="url"
+                    value={customVideoInput}
+                    onChange={(e) => setCustomVideoInput(e.target.value)}
+                    placeholder="https://pub-...r2.dev/video.mp4"
+                    className="edit-input"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomVideoUrl}
+                    className="preset-btn"
+                    style={{ padding: '0.4rem 0.8rem', whiteSpace: 'nowrap', background: '#222', color: '#FFD600' }}
+                  >
+                    + Add Link
+                  </button>
+                </div>
+                <span className="edit-hint">Paste direct MP4 or video streaming URL</span>
               </div>
             </div>
 
@@ -1089,7 +1259,11 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
           <div className="sticky-bar-inner">
             <div className="sticky-bar-status">
               <span className="status-dot-pulse" />
-              <span>Creating New Profile • {name || 'Draft'}</span>
+              <span>
+                {isPhotoUploading || isGalleryUploading || isVideoUploading
+                  ? '⏳ Uploading media files to R2...'
+                  : `Ready to publish • ${name || 'Draft Profile'}`}
+              </span>
             </div>
             <div className="sticky-bar-actions">
               {onCancel ? (
@@ -1101,10 +1275,18 @@ export default function CreateProfileForm({ onSuccess, onCancel }: CreateProfile
                   Cancel &amp; Return
                 </Link>
               )}
-              <button type="submit" disabled={isPending} className="sticky-btn-save">
+              <button
+                type="submit"
+                disabled={isPending || isPhotoUploading || isGalleryUploading || isVideoUploading}
+                className="sticky-btn-save"
+              >
                 {isPending ? (
                   <span className="btn-loading">
                     <span className="spinner" /> Saving to Cloudflare D1...
+                  </span>
+                ) : isPhotoUploading || isGalleryUploading || isVideoUploading ? (
+                  <span className="btn-loading">
+                    <span className="spinner" /> Uploading Media...
                   </span>
                 ) : (
                   '✨ Create & Publish Profile'
