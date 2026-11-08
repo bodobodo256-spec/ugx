@@ -64,6 +64,82 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
     `Hello ${profile.name}, I saw your verified profile on Uganda Sexy Babes and I would love to connect with you.`
   );
 
+  // Share state
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [shareToast, setShareToast] = useState<string | null>(null);
+
+  const getShareUrl = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.href;
+    }
+    return `https://ugandasexybabes.afrozex.com/profile/${profile.slug || profile.id}`;
+  };
+
+  const shareTitle = `${profile.name} (${profile.age}) — ${profile.location}, Uganda | Uganda Sexy Babes`;
+  const shareText = `Check out ${profile.name}'s verified profile on Uganda Sexy Babes 🔥`;
+
+  const showShareToast = (msg: string) => {
+    setShareToast(msg);
+    setTimeout(() => setShareToast(null), 3000);
+  };
+
+  const handleShareClick = async () => {
+    const url = getShareUrl();
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: url,
+        });
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        setIsShareModalOpen(true);
+      }
+    } else {
+      setIsShareModalOpen(true);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const url = getShareUrl();
+    let copied = false;
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        copied = true;
+      } catch {
+        // Fallback below
+      }
+    }
+    if (!copied && typeof document !== 'undefined') {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        copied = document.execCommand('copy');
+        document.body.removeChild(textArea);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (copied) {
+      setIsCopied(true);
+      showShareToast('✅ Profile link copied to clipboard!');
+      setTimeout(() => setIsCopied(false), 2500);
+    } else {
+      showShareToast('❌ Could not copy link automatically');
+    }
+  };
+
   return (
     <div className="profile-detail-page">
       {/* ══ BREADCRUMBS ══ */}
@@ -140,12 +216,31 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
                   </div>
                 </div>
 
-                {/* Status Dot */}
-                <div className="detail-status-pill">
-                  <span className={`status-dot-pulse ${profile.status === 'online' ? 'online' : 'recent'}`}></span>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
-                    {profile.status === 'online' ? 'Online Now 🟢' : 'Recently Active ⚪'}
-                  </span>
+                {/* Status Dot & Quick Share */}
+                <div className="detail-header-actions">
+                  <div className="detail-status-pill">
+                    <span className={`status-dot-pulse ${profile.status === 'online' ? 'online' : 'recent'}`}></span>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>
+                      {profile.status === 'online' ? 'Online Now 🟢' : 'Recently Active ⚪'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleShareClick}
+                    className="detail-header-share-btn"
+                    title="Share Profile"
+                    aria-label="Share Profile"
+                  >
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                    <span>Share</span>
+                  </button>
                 </div>
               </div>
 
@@ -189,6 +284,22 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
                     </svg>
                     <span>Call Now ({profile.phone})</span>
                   </a>
+
+                  <button
+                    type="button"
+                    onClick={handleShareClick}
+                    className="detail-btn detail-btn-share"
+                    aria-label={`Share ${profile.name}'s profile`}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                    <span>Share Profile</span>
+                  </button>
                 </div>
               </div>
 
@@ -355,6 +466,123 @@ export default function ProfileDetailView({ profile, relatedProfiles }: ProfileD
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ══ SHARE TOAST NOTIFICATION ══ */}
+      {shareToast && (
+        <div className="detail-share-toast" role="alert">
+          {shareToast}
+        </div>
+      )}
+
+      {/* ══ SHARE MODAL ══ */}
+      {isShareModalOpen && (
+        <div className="share-modal-overlay" onClick={() => setIsShareModalOpen(false)}>
+          <div className="share-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="share-modal-header">
+              <div className="share-modal-title-row">
+                <span className="share-modal-icon">🔗</span>
+                <div>
+                  <h3 className="share-modal-title">Share Profile</h3>
+                  <p className="share-modal-subtitle">Spread the word about {profile.name}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(false)}
+                className="share-modal-close"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Profile Mini Preview */}
+            <div className="share-profile-preview">
+              <img
+                src={profile.photoUrl || '/logo.png'}
+                alt={profile.name}
+                className="share-preview-thumb"
+              />
+              <div className="share-preview-info">
+                <div className="share-preview-name">{profile.name}, {profile.age}</div>
+                <div className="share-preview-loc">📍 {profile.location}, {profile.city}</div>
+                <div className="share-preview-tier">⭐ {profile.tier} Companion</div>
+              </div>
+            </div>
+
+            {/* Quick Social Share Buttons */}
+            <div className="share-social-grid">
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + '\n' + (typeof window !== 'undefined' ? window.location.href : ''))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="share-social-btn share-whatsapp"
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.5L3 20.7l1.4-4.8A8.5 8.5 0 1 1 20.5 11.8Z"/>
+                </svg>
+                <span>WhatsApp</span>
+              </a>
+
+              <a
+                href={`https://t.me/share/url?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(shareText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="share-social-btn share-telegram"
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="m20.665 3.717-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l-.313 4.674c.459 0 .661-.21.917-.46l2.203-2.14 4.58 3.385c.844.464 1.452.225 1.663-.785l3.003-14.145c.309-1.239-.473-1.8-1.282-1.474z"/>
+                </svg>
+                <span>Telegram</span>
+              </a>
+
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(shareText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="share-social-btn share-x"
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                <span>X / Twitter</span>
+              </a>
+
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="share-social-btn share-facebook"
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>Facebook</span>
+              </a>
+            </div>
+
+            {/* Copy Link Section */}
+            <div className="share-copy-section">
+              <label className="share-copy-label">Or copy profile link</label>
+              <div className="share-copy-input-row">
+                <input
+                  type="text"
+                  readOnly
+                  value={typeof window !== 'undefined' ? window.location.href : ''}
+                  className="share-copy-input"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className={`share-copy-btn ${isCopied ? 'copied' : ''}`}
+                >
+                  {isCopied ? 'Copied! ✓' : 'Copy Link'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
