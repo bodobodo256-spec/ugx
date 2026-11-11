@@ -83,10 +83,12 @@ export default function HomeContent({ profiles, initialCity = '' }: HomeContentP
   const rawStandardProfiles = filteredProfiles.filter((p) => !p.tier.startsWith('VIP') && !p.isPremium && p.tier !== 'Premium');
 
   // Seeded shuffle — VIP and Standard use different seed offsets so their orders differ
-  const vipProfiles      = useMemo(() => seededShuffle(rawVipProfiles,      currentSlot * 2),     // eslint-disable-line react-hooks/exhaustive-deps
-    [currentSlot, rawVipProfiles.length, selectedCity, searchQuery]);
-  const standardProfiles = useMemo(() => seededShuffle(rawStandardProfiles, currentSlot * 2 + 1), // eslint-disable-line react-hooks/exhaustive-deps
-    [currentSlot, rawStandardProfiles.length, selectedCity, searchQuery]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const vipProfiles      = useMemo(() => seededShuffle(rawVipProfiles,      currentSlot * 2),
+    [currentSlot, rawVipProfiles, selectedCity, searchQuery]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const standardProfiles = useMemo(() => seededShuffle(rawStandardProfiles, currentSlot * 2 + 1),
+    [currentSlot, rawStandardProfiles, selectedCity, searchQuery]);
 
 
   return (

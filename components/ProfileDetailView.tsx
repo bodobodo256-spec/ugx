@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { type Profile } from '@/db/schema';
 import ProfileCard from '@/components/ProfileCard';
 import { toCitySlug, normalizeWhatsappNumber } from '@/lib/site';
+import { parseMediaUrls } from '@/lib/profile-utils';
 
 interface ProfileDetailViewProps {
   profile: Profile;
@@ -14,25 +15,8 @@ interface ProfileDetailViewProps {
 
 export default function ProfileDetailView({ profile, relatedProfiles }: ProfileDetailViewProps) {
   // Parse gallery and videos
-  const gallery: string[] = (() => {
-    if (!profile.galleryUrls) return [];
-    try {
-      const parsed = JSON.parse(profile.galleryUrls);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return profile.galleryUrls.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
-    }
-  })();
-
-  const videos: string[] = (() => {
-    if (!profile.videoUrls) return [];
-    try {
-      const parsed = JSON.parse(profile.videoUrls);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return profile.videoUrls.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
-    }
-  })();
+  const gallery: string[] = parseMediaUrls(profile.galleryUrls);
+  const videos: string[] = parseMediaUrls(profile.videoUrls);
 
   // All photos combined: main photo + gallery photos
   const allPhotos: string[] = [

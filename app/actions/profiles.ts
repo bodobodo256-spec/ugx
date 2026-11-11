@@ -676,8 +676,3 @@ export async function deleteProfile(id: number): Promise<{ success: boolean; err
   }
 }
 
-// â”€â”€â”€ Admin: Refresh â€” fetch fresh profile list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-export async function fetchAdminProfiles(): Promise<Profile[]> {
-  return getAdminProfiles();
-}

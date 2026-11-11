@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminPasskey, verifyAdminPasskey } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const { passkey } = await req.json();
-    const expectedPasskey = process.env.ADMIN_PASSKEY || 'Badman256';
 
-    if (typeof passkey === 'string' && passkey.trim() === expectedPasskey) {
+    if (verifyAdminPasskey(passkey)) {
+      const expectedPasskey = getAdminPasskey();
       const response = NextResponse.json({ success: true, token: expectedPasskey });
       response.cookies.set('ug_admin_passkey', expectedPasskey, {
         httpOnly: true,

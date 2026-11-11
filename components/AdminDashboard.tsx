@@ -13,13 +13,11 @@ import {
   toggleProfileNew,
   toggleProfileVerified,
   updatePaymentStatus,
-  adminCreateProfile,
   deleteProfile,
-  fetchAdminProfiles,
+  getAdminProfiles,
 } from '@/app/actions/profiles';
 import '@/app/admin/admin.css';
 import '@/app/admin/edit.css';
-import CreateProfileForm from '@/components/CreateProfileForm';
 
 interface AdminDashboardProps {
   initialProfiles: Profile[];
@@ -71,8 +69,8 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
   const handleRefresh = async () => {
     showToast('Refreshing data from database...');
     try {
-      const fresh = await fetchAdminProfiles();
-      if (fresh && fresh.length) {
+      const fresh = await getAdminProfiles();
+      if (fresh) {
         setProfilesList(fresh);
         showToast(`✅ Database synced (${fresh.length} profiles)!`);
       }
@@ -174,8 +172,8 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
       showToast(`✅ ${successMsg}`);
       // Refresh state directly from DB
       try {
-        const fresh = await fetchAdminProfiles();
-        if (fresh && fresh.length) setProfilesList(fresh);
+        const fresh = await getAdminProfiles();
+        if (fresh) setProfilesList(fresh);
       } catch (err) {
         console.error('Fetch error:', err);
       }
@@ -185,8 +183,8 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
       showToast(`❌ ${label} failed: ${errMsg}`, true);
       // Revert optimistic update by re-syncing from server
       try {
-        const fresh = await fetchAdminProfiles();
-        if (fresh && fresh.length) setProfilesList(fresh);
+        const fresh = await getAdminProfiles();
+        if (fresh) setProfilesList(fresh);
       } catch (err) {
         console.error('Fetch error:', err);
       }
@@ -615,13 +613,6 @@ export default function AdminDashboard({ initialProfiles }: AdminDashboardProps)
               </button>
             </div>
 
-            <Link
-              href="/admin/create"
-              className="admin-btn admin-btn-primary admin-btn-add-profile"
-              style={{ textDecoration: 'none', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-            >
-              ➕ Add New Profile
-            </Link>
 
             {(searchQuery || selectedCity) && (
               <button

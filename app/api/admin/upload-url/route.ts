@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { verifyAdminPasskey } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const passkeyHeader = req.headers.get('x-admin-passkey') || req.cookies.get('ug_admin_passkey')?.value;
-    const expectedPasskey = process.env.ADMIN_PASSKEY || 'Badman256';
 
-    if (!passkeyHeader || passkeyHeader.trim() !== expectedPasskey) {
+    if (!verifyAdminPasskey(passkeyHeader)) {
       return NextResponse.json({ success: false, error: 'Unauthorized: Invalid admin passkey.' }, { status: 401 });
     }
 

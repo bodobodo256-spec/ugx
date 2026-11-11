@@ -58,7 +58,6 @@ export default function ProfileCard({ profile, priority = false }: ProfileCardPr
             </div>
             <div className="card-status-row">
               <span className="labels">
-                {profile.isNew && <span className="label label-new">NEW</span>}
                 {profile.isVerified && <span className="label label-verified">VERIFIED</span>}
                 {isPremium && <span className="label" style={{ background: '#8e44ad', color: '#fff' }}>PREMIUM</span>}
               </span>
